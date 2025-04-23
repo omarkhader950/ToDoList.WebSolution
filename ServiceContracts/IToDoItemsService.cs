@@ -2,90 +2,67 @@
 using ServiceContracts.DTO;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServiceContracts
 {
     public interface IToDoItemsService
     {
         /// <summary>
-        /// Adds a new task to the list of TodoItems
+        /// Adds a new task to the list of TodoItems.
         /// </summary>
         /// <param name="todoItemAddRequest">Task to add</param>
         /// <returns>Returns the task details along with the newly generated ID</returns>
         ToDoItemResponse AddTodoItem(TodoItemAddRequest? todoItemAddRequest);
 
         /// <summary>
-        /// Returns all TodoItems
+        /// Returns all TodoItems (admin or general case).
         /// </summary>
         /// <returns>Returns a list of TodoItemResponse objects</returns>
         List<ToDoItemResponse> GetAllTodoItems();
 
         /// <summary>
-        /// Returns the TodoItem object based on the given ID
+        /// Returns all TodoItems for a specific user.
         /// </summary>
-        /// <param name="todoItemId">ID of the task to retrieve</param>
-        /// <returns>Returns matching task as TodoItemResponse</returns>
-        ToDoItemResponse? GetTodoItemById(Guid? todoItemId);
+        List<ToDoItemResponse> GetAllTodoItemsByUser(Guid userId);
 
         /// <summary>
-        /// Returns filtered list of TodoItems by title or description
+        /// Returns a paginated list of TodoItems.
         /// </summary>
-        /// <param name="searchBy">Search field (title/description)</param>
-        /// <param name="searchString">Search value</param>
-        /// <returns>Returns list of matching TodoItemResponse objects</returns>
-       // List<ToDoItemResponse> GetFilteredTodoItems(string searchBy, string? searchString);
+        List<ToDoItemResponse> GetPaginatedItems(int pageNumber, int pageSize);
 
         /// <summary>
-        /// Returns sorted TodoItems list
+        /// Returns a paginated list of TodoItems for a specific user.
         /// </summary>
-        /// <param name="allItems">List of TodoItems to sort</param>
-        /// <param name="sortBy">Name of the property to sort by</param>
-        /// <param name="sortOrder">Sort direction (ASC/DESC)</param>
-        /// <returns>Returns sorted list of TodoItemResponse objects</returns>
-       
-        //List<ToDoItemResponse> GetSortedTodoItems(List<ToDoItemResponse> allItems, string sortBy, SortOrderOptions sortOrder);
+        List<ToDoItemResponse> GetPaginatedItemsForUser(Guid userId, int pageNumber, int pageSize);
 
         /// <summary>
-        /// Updates the specified TodoItem based on its ID
+        /// Gets a TodoItem by ID and UserId.
         /// </summary>
-        /// <param name="todoItemUpdateRequest">Todo item data to update</param>
-        /// <returns>Returns updated TodoItemResponse object</returns>
-        ToDoItemResponse UpdateTodoItem(ToDoItemUpdateRequest? todoItemUpdateRequest);
+        ToDoItemResponse? GetTodoItemById(Guid? todoItemId, Guid userId);
 
         /// <summary>
-        /// Deletes a TodoItem by its ID
+        /// Updates the specified TodoItem based on its ID.
         /// </summary>
-        /// <param name="todoItemId">ID of the task to delete</param>
-        /// <returns>Returns true if deletion is successful, otherwise false</returns>
-        bool DeleteTodoItem(Guid? todoItemId);
+        ToDoItemResponse UpdateTodoItem(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid userId);
 
+        /// <summary>
+        /// Deletes a TodoItem by its ID and UserId.
+        /// </summary>
+        bool DeleteTodoItem(Guid? todoItemId, Guid userId);
 
-
+        /// <summary>
+        /// Gets all deleted items (admin use).
+        /// </summary>
         List<ToDoItemResponse> GetAllDeletedItems();
 
-
-
+        /// <summary>
+        /// Restores a soft-deleted TodoItem by its ID.
+        /// </summary>
         bool RestoreTodoItem(Guid todoItemId);
 
-
-        public ToDoItemResponse? GetDeletedItemById(Guid todoItemId);
-
-
-
-
-
-        public List<ToDoItemResponse> GetPaginatedItems(int pageNumber, int pageSize);
-
-
-
-
-        public List<ToDoItemResponse> GetAllTodoItemsByUser(Guid userId);
-
-
-
-
+        /// <summary>
+        /// Gets a deleted TodoItem by ID.
+        /// </summary>
+        ToDoItemResponse? GetDeletedItemById(Guid todoItemId);
     }
 }

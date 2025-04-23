@@ -22,6 +22,33 @@ namespace Entities.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Entities.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("8dfc85ca-f780-43b1-b908-97ee9c90ef42"),
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
+                            Name = "User"
+                        });
+                });
+
             modelBuilder.Entity("Entities.TodoItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -63,23 +90,23 @@ namespace Entities.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            Id = new Guid("db2f25b9-2149-4f75-aca0-f5baab2df9f4"),
                             Description = "This is the first task.",
-                            DueDate = new DateTime(2025, 4, 23, 13, 41, 45, 240, DateTimeKind.Local).AddTicks(5521),
+                            DueDate = new DateTime(2025, 4, 24, 12, 24, 14, 848, DateTimeKind.Local).AddTicks(4673),
                             IsCompleted = false,
                             IsDeleted = false,
                             Title = "First Task",
-                            UserId = new Guid("22222222-2222-2222-2222-222222222222")
+                            UserId = new Guid("44c091c5-be82-4b3f-a9e0-eb195d2e62af")
                         },
                         new
                         {
-                            Id = new Guid("aaaaaaa2-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            Id = new Guid("4f1790de-f460-409d-8c27-67089bcbed2d"),
                             Description = "This is the second task.",
-                            DueDate = new DateTime(2025, 4, 24, 13, 41, 45, 240, DateTimeKind.Local).AddTicks(5534),
+                            DueDate = new DateTime(2025, 4, 25, 12, 24, 14, 848, DateTimeKind.Local).AddTicks(4695),
                             IsCompleted = false,
                             IsDeleted = false,
                             Title = "Second Task",
-                            UserId = new Guid("33333333-3333-3333-3333-333333333333")
+                            UserId = new Guid("3625e573-9f81-46a1-80f9-1100306169f5")
                         });
                 });
 
@@ -93,9 +120,8 @@ namespace Entities.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -104,35 +130,37 @@ namespace Entities.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("RoleId");
+
                     b.ToTable("Users");
 
                     b.HasData(
                         new
                         {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Id = new Guid("fac962ac-e397-47e2-996f-cc8e728a7f8f"),
                             PasswordHash = "adminpasswordhash",
-                            Role = "Admin",
+                            RoleId = new Guid("8dfc85ca-f780-43b1-b908-97ee9c90ef42"),
                             Username = "admin"
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            Id = new Guid("44c091c5-be82-4b3f-a9e0-eb195d2e62af"),
                             PasswordHash = "user1passwordhash",
-                            Role = "User",
+                            RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
                             Username = "user1"
                         },
                         new
                         {
-                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            Id = new Guid("3625e573-9f81-46a1-80f9-1100306169f5"),
                             PasswordHash = "user2passwordhash",
-                            Role = "User",
+                            RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
                             Username = "user2"
                         },
                         new
                         {
-                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
+                            Id = new Guid("59dfec42-4c48-407f-b9de-1ab16a845624"),
                             PasswordHash = "user3passwordhash",
-                            Role = "User",
+                            RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
                             Username = "user3"
                         });
                 });
@@ -146,6 +174,22 @@ namespace Entities.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Entities.User", b =>
+                {
+                    b.HasOne("Entities.Role", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Entities.Role", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Entities.User", b =>

@@ -5,115 +5,85 @@ namespace Entities
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
-        }
-
-        public ApplicationDbContext()
-        {
-        }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         public virtual DbSet<TodoItem> TodoItems { get; set; }
-        public virtual DbSet<User> Users { get; set; }  // Add DbSet for Users
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Role> Roles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Fixed GUIDs for seeded users
-            var adminId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-            var user1Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
-            var user2Id = Guid.Parse("33333333-3333-3333-3333-333333333333");
-            var user3Id = Guid.Parse("44444444-4444-4444-4444-444444444444");
+            // Fixed GUIDs
+            var adminId = Guid.Parse("FAC962AC-E397-47E2-996F-CC8E728A7F8F");
+            var user1Id = Guid.Parse("44C091C5-BE82-4B3F-A9E0-EB195D2E62AF");
+            var user2Id = Guid.Parse("3625E573-9F81-46A1-80F9-1100306169F5");
+            var user3Id = Guid.Parse("59DFEC42-4C48-407F-B9DE-1AB16A845624");
 
-            // Configure TodoItem entity
+            var roleAdminId = Guid.Parse("8DFC85CA-F780-43B1-B908-97EE9C90EF42");
+            var roleUserId = Guid.Parse("7B858E14-D92D-43E0-AFE9-261365D067AD");
+
+            // Configure Role entity
+            modelBuilder.Entity<Role>().HasData(
+                new Role { Id = roleAdminId, Name = "Admin" },
+                new Role { Id = roleUserId, Name = "User" }
+            );
+
+            // Configure User entity
+            modelBuilder.Entity<User>().HasData(
+                new User { Id = adminId, Username = "admin", PasswordHash = "adminpasswordhash", RoleId = roleAdminId },
+                new User { Id = user1Id, Username = "user1", PasswordHash = "user1passwordhash", RoleId = roleUserId },
+                new User { Id = user2Id, Username = "user2", PasswordHash = "user2passwordhash", RoleId = roleUserId },
+                new User { Id = user3Id, Username = "user3", PasswordHash = "user3passwordhash", RoleId = roleUserId }
+            );
+
+            // Configure relationships
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Role)
+                .WithMany(r => r.Users)
+                .HasForeignKey(u => u.RoleId);
+
+            // Configure TodoItem
             modelBuilder.Entity<TodoItem>(entity =>
             {
                 entity.HasKey(e => e.Id);
 
-                entity.Property(e => e.Title)
-                      .IsRequired()
-                      .HasMaxLength(100);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.IsCompleted).HasDefaultValue(false);
+                entity.Property(e => e.DueDate).HasColumnType("datetime");
+                entity.Property(e => e.IsDeleted).HasDefaultValue(false);
 
-                entity.Property(e => e.Description)
-                      .HasMaxLength(500);
-
-                entity.Property(e => e.IsCompleted)
-                      .HasDefaultValue(false);
-
-                entity.Property(e => e.DueDate)
-                      .HasColumnType("datetime");
-
-                entity.Property(e => e.IsDeleted)
-                      .HasDefaultValue(false);
-
-                // Foreign key relationship
                 entity.HasOne(e => e.User)
                       .WithMany(u => u.TodoItems)
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Global filter for soft delete
-            modelBuilder.Entity<TodoItem>()
-                .HasQueryFilter(t => !t.IsDeleted);
+            modelBuilder.Entity<TodoItem>().HasQueryFilter(t => !t.IsDeleted);
 
-            // Seed Users
-            modelBuilder.Entity<User>().HasData(
-                new User
-                {
-                    Id = adminId,
-                    Username = "admin",
-                    PasswordHash = "adminpasswordhash",
-                    Role = "Admin"
-                },
-                new User
-                {
-                    Id = user1Id,
-                    Username = "user1",
-                    PasswordHash = "user1passwordhash",
-                    Role = "User"
-                },
-                new User
-                {
-                    Id = user2Id,
-                    Username = "user2",
-                    PasswordHash = "user2passwordhash",
-                    Role = "User"
-                },
-                new User
-                {
-                    Id = user3Id,
-                    Username = "user3",
-                    PasswordHash = "user3passwordhash",
-                    Role = "User"
-                }
-            );
-
-            // Seed TodoItems assigned to real users
+            // Seed TodoItems
             modelBuilder.Entity<TodoItem>().HasData(
                 new TodoItem
                 {
-                    Id = Guid.Parse("aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                    Id = Guid.Parse("DB2F25B9-2149-4F75-ACA0-F5BAAB2DF9F4"),
                     Title = "First Task",
                     Description = "This is the first task.",
                     IsCompleted = false,
                     DueDate = DateTime.Now.AddDays(1),
-                    IsDeleted = false,
                     UserId = user1Id
                 },
                 new TodoItem
                 {
-                    Id = Guid.Parse("aaaaaaa2-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                    Id = Guid.Parse("4F1790DE-F460-409D-8C27-67089BCBED2D"),
                     Title = "Second Task",
                     Description = "This is the second task.",
                     IsCompleted = false,
                     DueDate = DateTime.Now.AddDays(2),
-                    IsDeleted = false,
                     UserId = user2Id
                 }
             );
         }
-
     }
 }

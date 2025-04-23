@@ -30,6 +30,15 @@ namespace Services
             if (_dbContext.Users.Any(u => u.Username == user.Username))
                 throw new InvalidOperationException("Username is already taken.");
 
+
+            //maybe make an error 
+            // Get RoleId for default "User" role
+            var defaultRole = _dbContext.Roles.FirstOrDefault(r => r.Name == "User");
+            if (defaultRole == null)
+                throw new Exception("Default role 'User' not found. Please seed the roles properly.");
+
+
+
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
             var newUser = new User
@@ -37,7 +46,8 @@ namespace Services
                 Id = Guid.NewGuid(),
                 Username = user.Username,
                 PasswordHash = hashedPassword,
-                Role = "User" // default role
+                RoleId = defaultRole.Id
+
             };
 
             _dbContext.Users.Add(newUser);
@@ -51,7 +61,8 @@ namespace Services
         //LoginRequest DTO
         public string? LoginUser(LoginRequest loginUser)
         {
-            var user = _dbContext.Users.FirstOrDefault(u => u.Username == loginUser.Username);
+            var user = _dbContext.Users.Include(u => u.Role)
+                .FirstOrDefault(u => u.Username == loginUser.Username);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginUser.Password, user.PasswordHash))
                 return null; // invalid credentials
@@ -61,7 +72,9 @@ namespace Services
 
         public User? GetUserByUsername(string username)
         {
-            return _dbContext.Users.FirstOrDefault(u => u.Username == username);
+            return _dbContext.Users
+                             .Include(u => u.Role)
+                             .FirstOrDefault(u => u.Username == username);
         }
     }
 }

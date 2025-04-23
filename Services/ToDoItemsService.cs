@@ -13,7 +13,7 @@ namespace Services
 
         //private field
         private readonly ApplicationDbContext _db;
-        private readonly IToDoItemsService _toDoItemsService;
+      //  private readonly IToDoItemsService _toDoItemsService;
 
 
         public ToDoItemsService(ApplicationDbContext applicationDbContext)
@@ -42,30 +42,29 @@ namespace Services
 
 
 
-        public ToDoItemResponse? GetTodoItemById(Guid? todoItemId)
+        public ToDoItemResponse? GetTodoItemById(Guid? todoItemId, Guid userId)
         {
             if (todoItemId == null)
                 return null;
 
             TodoItem? todoItem = _db.TodoItems
-              .FirstOrDefault(temp => temp.Id == todoItemId);
+              .FirstOrDefault(temp => temp.Id == todoItemId && temp.UserId == userId);
             if (todoItem == null)
                 return null;
 
             return ConvertTodoItemToDoItemResponse(todoItem);
         }
 
-        public ToDoItemResponse UpdateTodoItem(ToDoItemUpdateRequest? todoItemUpdateRequest)
+        public ToDoItemResponse UpdateTodoItem(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid userId)
         {
             if (todoItemUpdateRequest == null)
                 throw new ArgumentNullException(nameof(TodoItem));
 
-            //validation
-            //ValidationHelper.ModelValidation(personUpdateRequest);
+          
 
-            //get matching person object to update
+            //get matching  object to update
             TodoItem? matchingTodoItem = _db.TodoItems
-              .FirstOrDefault(temp => temp.Id == todoItemUpdateRequest.Id);
+              .FirstOrDefault(temp => temp.Id == todoItemUpdateRequest.Id && temp.UserId == userId);
             if (matchingTodoItem == null)
             {
                 throw new ArgumentException("Given person id doesn't exist");
@@ -83,13 +82,13 @@ namespace Services
             return ConvertTodoItemToDoItemResponse(matchingTodoItem);
         }
 
-        public bool DeleteTodoItem(Guid? todoItemId)
+        public bool DeleteTodoItem(Guid? todoItemId, Guid userId)
         {
             if (todoItemId == null)
                 throw new ArgumentNullException(nameof(todoItemId));
 
             // Because of the global filter, this will auto-exclude deleted items
-            var todoItem = _db.TodoItems.FirstOrDefault(temp => temp.Id == todoItemId);
+            var todoItem = _db.TodoItems.FirstOrDefault(temp => temp.Id == todoItemId && temp.UserId == userId);
             if (todoItem == null)
                 return false;
 
@@ -169,7 +168,7 @@ namespace Services
 
 
 
-
+       
         public List<ToDoItemResponse> GetPaginatedItems(int pageNumber, int pageSize)
         {
             return _db.TodoItems
@@ -177,6 +176,17 @@ namespace Services
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).Select(t => t.ToTodoItemResponse()).ToList();
      
+        }
+
+        public List<ToDoItemResponse> GetPaginatedItemsForUser(Guid userId, int pageNumber, int pageSize)
+        {
+            return _db.TodoItems
+                .Where(t => t.UserId == userId && !t.IsDeleted)
+                .OrderBy(t => t.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(t => ConvertTodoItemToDoItemResponse(t))
+                .ToList();
         }
 
 
