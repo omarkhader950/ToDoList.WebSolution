@@ -39,9 +39,6 @@ namespace Services
           .Select(temp => ConvertTodoItemToDoItemResponse(temp))
           .ToList();
 
-
-
-
         }
 
 
@@ -51,7 +48,7 @@ namespace Services
             if (todoItemId == null)
                 return null;
 
-            TodoItem? todoItem = _db.TodoItems
+            TodoItem? todoItem = _db.TodoItems.Include(t => t.User)
               .FirstOrDefault(temp => temp.Id == todoItemId && temp.UserId == userId);
             if (todoItem == null)
                 return null;
@@ -130,6 +127,7 @@ namespace Services
         public List<ToDoItemResponse> GetAllDeletedItems()
         {
             return _db.TodoItems
+                .Include(t => t.User)
                 .IgnoreQueryFilters()
                 .Where(t => t.IsDeleted)
                 .Select(t => t.ToTodoItemResponse())
@@ -164,6 +162,7 @@ namespace Services
         public ToDoItemResponse? GetDeletedItemById(Guid todoItemId)
         {
             var item = _db.TodoItems
+                .Include(t => t.User)
                 .IgnoreQueryFilters()
                 .FirstOrDefault(t => t.Id == todoItemId && t.IsDeleted);
 
@@ -185,6 +184,7 @@ namespace Services
         public List<ToDoItemResponse> GetPaginatedItemsForUser(Guid userId, int pageNumber, int pageSize)
         {
             return _db.TodoItems
+                .Include(t => t.User)
                 .Where(t => t.UserId == userId && !t.IsDeleted)
                 .OrderBy(t => t.Id)
                 .Skip((pageNumber - 1) * pageSize)
@@ -197,7 +197,7 @@ namespace Services
 
         public List<ToDoItemResponse> GetAllTodoItemsByUser(Guid userId)
         {
-            return _db.TodoItems
+            return _db.TodoItems.Include(t => t.User)
                 .Where(t => t.UserId == userId && !t.IsDeleted)
                 .Select(t => t.ToTodoItemResponse())
                 .ToList();
