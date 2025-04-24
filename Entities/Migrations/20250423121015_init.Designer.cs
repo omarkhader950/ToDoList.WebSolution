@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Entities.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250423092415_init")]
+    [Migration("20250423121015_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -95,7 +95,7 @@ namespace Entities.Migrations
                         {
                             Id = new Guid("db2f25b9-2149-4f75-aca0-f5baab2df9f4"),
                             Description = "This is the first task.",
-                            DueDate = new DateTime(2025, 4, 24, 12, 24, 14, 848, DateTimeKind.Local).AddTicks(4673),
+                            DueDate = new DateTime(2025, 4, 24, 15, 10, 15, 402, DateTimeKind.Local).AddTicks(4988),
                             IsCompleted = false,
                             IsDeleted = false,
                             Title = "First Task",
@@ -105,7 +105,7 @@ namespace Entities.Migrations
                         {
                             Id = new Guid("4f1790de-f460-409d-8c27-67089bcbed2d"),
                             Description = "This is the second task.",
-                            DueDate = new DateTime(2025, 4, 25, 12, 24, 14, 848, DateTimeKind.Local).AddTicks(4695),
+                            DueDate = new DateTime(2025, 4, 25, 15, 10, 15, 402, DateTimeKind.Local).AddTicks(5008),
                             IsCompleted = false,
                             IsDeleted = false,
                             Title = "Second Task",
@@ -141,28 +141,28 @@ namespace Entities.Migrations
                         new
                         {
                             Id = new Guid("fac962ac-e397-47e2-996f-cc8e728a7f8f"),
-                            PasswordHash = "adminpasswordhash",
+                            PasswordHash = "$2a$11$3FZA6Q1DbDPmZuyD3faMoexMPPJN8hygFu.iw5ZHa38FcvsjO41ny",
                             RoleId = new Guid("8dfc85ca-f780-43b1-b908-97ee9c90ef42"),
                             Username = "admin"
                         },
                         new
                         {
                             Id = new Guid("44c091c5-be82-4b3f-a9e0-eb195d2e62af"),
-                            PasswordHash = "user1passwordhash",
+                            PasswordHash = "$2a$11$Lgg.oI6HxlIyyNG9TP9eAuWyNZrAehWPCGt55dtUw0ykcVNBgDG32",
                             RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
                             Username = "user1"
                         },
                         new
                         {
                             Id = new Guid("3625e573-9f81-46a1-80f9-1100306169f5"),
-                            PasswordHash = "user2passwordhash",
+                            PasswordHash = "$2a$11$mriFSg8EnEuHliFFwl98heUfCAkXST.ssXitfTSQq5h9LEinrZ43e",
                             RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
                             Username = "user2"
                         },
                         new
                         {
                             Id = new Guid("59dfec42-4c48-407f-b9de-1ab16a845624"),
-                            PasswordHash = "user3passwordhash",
+                            PasswordHash = "$2a$11$N9hVGIHD.xQJBIUnS4JOD.DBA/OAV/aUvNVsnslKHfPm2C3aHCcvO",
                             RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
                             Username = "user3"
                         });

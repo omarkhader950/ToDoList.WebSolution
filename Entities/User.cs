@@ -17,6 +17,11 @@ namespace Entities
         // Foreign key to Role
         public Guid RoleId { get; set; }
 
+
+       
+
+
+
         // Navigation property
         public Role Role { get; set; }
 

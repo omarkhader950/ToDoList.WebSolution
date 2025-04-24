@@ -22,6 +22,8 @@ namespace ServiceContracts.DTO
 
         public DateTime DueDate { get; set; }
 
+        public string UserName { get; set; }
+
 
 
 
@@ -43,6 +45,7 @@ namespace ServiceContracts.DTO
                 Description = todo.Description,
                 IsCompleted = todo.IsCompleted,
                 DueDate = todo.DueDate,
+                UserName = todo.User.Username,
                 
             };
         }

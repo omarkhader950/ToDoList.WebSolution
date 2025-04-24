@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ServiceContracts;
 using ServiceContracts.DTO;
@@ -19,6 +20,7 @@ namespace ToDoList.WebAPI.Controllers
 
         // POST: api/Auth/register
         [HttpPost("register")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Register([FromBody] RegisterRequest registerRequest)
         {
             try
@@ -54,3 +56,5 @@ namespace ToDoList.WebAPI.Controllers
         }
     }
 }
+
+//adminpasswordhash

@@ -82,10 +82,10 @@ namespace Entities.Migrations
                 columns: new[] { "Id", "PasswordHash", "RoleId", "Username" },
                 values: new object[,]
                 {
-                    { new Guid("3625e573-9f81-46a1-80f9-1100306169f5"), "user2passwordhash", new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"), "user2" },
-                    { new Guid("44c091c5-be82-4b3f-a9e0-eb195d2e62af"), "user1passwordhash", new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"), "user1" },
-                    { new Guid("59dfec42-4c48-407f-b9de-1ab16a845624"), "user3passwordhash", new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"), "user3" },
-                    { new Guid("fac962ac-e397-47e2-996f-cc8e728a7f8f"), "adminpasswordhash", new Guid("8dfc85ca-f780-43b1-b908-97ee9c90ef42"), "admin" }
+                    { new Guid("3625e573-9f81-46a1-80f9-1100306169f5"), "$2a$11$mriFSg8EnEuHliFFwl98heUfCAkXST.ssXitfTSQq5h9LEinrZ43e", new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"), "user2" },
+                    { new Guid("44c091c5-be82-4b3f-a9e0-eb195d2e62af"), "$2a$11$Lgg.oI6HxlIyyNG9TP9eAuWyNZrAehWPCGt55dtUw0ykcVNBgDG32", new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"), "user1" },
+                    { new Guid("59dfec42-4c48-407f-b9de-1ab16a845624"), "$2a$11$N9hVGIHD.xQJBIUnS4JOD.DBA/OAV/aUvNVsnslKHfPm2C3aHCcvO", new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"), "user3" },
+                    { new Guid("fac962ac-e397-47e2-996f-cc8e728a7f8f"), "$2a$11$3FZA6Q1DbDPmZuyD3faMoexMPPJN8hygFu.iw5ZHa38FcvsjO41ny", new Guid("8dfc85ca-f780-43b1-b908-97ee9c90ef42"), "admin" }
                 });
 
             migrationBuilder.InsertData(
@@ -93,8 +93,8 @@ namespace Entities.Migrations
                 columns: new[] { "Id", "Description", "DueDate", "Title", "UserId" },
                 values: new object[,]
                 {
-                    { new Guid("4f1790de-f460-409d-8c27-67089bcbed2d"), "This is the second task.", new DateTime(2025, 4, 25, 12, 24, 14, 848, DateTimeKind.Local).AddTicks(4695), "Second Task", new Guid("3625e573-9f81-46a1-80f9-1100306169f5") },
-                    { new Guid("db2f25b9-2149-4f75-aca0-f5baab2df9f4"), "This is the first task.", new DateTime(2025, 4, 24, 12, 24, 14, 848, DateTimeKind.Local).AddTicks(4673), "First Task", new Guid("44c091c5-be82-4b3f-a9e0-eb195d2e62af") }
+                    { new Guid("4f1790de-f460-409d-8c27-67089bcbed2d"), "This is the second task.", new DateTime(2025, 4, 25, 15, 10, 15, 402, DateTimeKind.Local).AddTicks(5008), "Second Task", new Guid("3625e573-9f81-46a1-80f9-1100306169f5") },
+                    { new Guid("db2f25b9-2149-4f75-aca0-f5baab2df9f4"), "This is the first task.", new DateTime(2025, 4, 24, 15, 10, 15, 402, DateTimeKind.Local).AddTicks(4988), "First Task", new Guid("44c091c5-be82-4b3f-a9e0-eb195d2e62af") }
                 });
 
             migrationBuilder.CreateIndex(

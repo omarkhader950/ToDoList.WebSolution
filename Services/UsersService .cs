@@ -65,6 +65,7 @@ namespace Services
                 .FirstOrDefault(u => u.Username == loginUser.Username);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginUser.Password, user.PasswordHash))
+
                 return null; // invalid credentials
 
             return _jwtService.GenerateToken(user);

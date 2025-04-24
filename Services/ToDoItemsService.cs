@@ -32,11 +32,15 @@ namespace Services
 
         public List<ToDoItemResponse> GetAllTodoItems()
         {
-           
-            return _db.TodoItems.ToList()
-              .Select(temp => ConvertTodoItemToDoItemResponse(temp)).ToList();
 
-       
+            return _db.TodoItems
+          .Include(t => t.User) 
+          .ToList()
+          .Select(temp => ConvertTodoItemToDoItemResponse(temp))
+          .ToList();
+
+
+
 
         }
 
@@ -198,6 +202,8 @@ namespace Services
                 .Select(t => t.ToTodoItemResponse())
                 .ToList();
         }
+
+     
 
     }
 }
