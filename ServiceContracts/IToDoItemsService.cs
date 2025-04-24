@@ -64,5 +64,9 @@ namespace ServiceContracts
         /// Gets a deleted TodoItem by ID.
         /// </summary>
         ToDoItemResponse? GetDeletedItemById(Guid todoItemId);
+
+
+
+        public List<UserWithTodoItemsResponse> GetAllTodoItemsGroupedByUser();
     }
 }

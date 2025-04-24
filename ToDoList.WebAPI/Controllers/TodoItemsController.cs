@@ -4,6 +4,7 @@ using ServiceContracts.DTO;
 using ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Services;
 
 namespace ToDoList.WebAPI.Controllers
 {
@@ -29,13 +30,14 @@ namespace ToDoList.WebAPI.Controllers
             return CreatedAtAction(nameof(GetTodoItemById), new { todoItemId = createdItem.Id }, createdItem);
         }
 
+        [Authorize(Roles = "Admin")]
         // GET: api/todoitems
-        [HttpGet]
-        public IActionResult GetAllTodoItems()
-        {
-            var items = _todoItemsService.GetAllTodoItems();
-            return Ok(items);
-        }
+        //[HttpGet]
+        //public IActionResult GetAllTodoItems()
+        //{
+        //    var items = _todoItemsService.GetAllTodoItems();
+        //    return Ok(items);
+        //}
 
         // GET: api/todoitems/{todoItemId}
         [HttpGet("{todoItemId}")]
@@ -159,6 +161,16 @@ namespace ToDoList.WebAPI.Controllers
             return Ok(items);
         }
 
+
+        [Authorize(Roles = "Admin")]
+        // GET: api/todoitems
+        [HttpGet]
+        public ActionResult<List<UserWithTodoItemsResponse>> GetAllGroupedByUser()
+        {
+            var result = _todoItemsService.GetAllTodoItemsGroupedByUser();
+
+            return Ok(result);
+        }
 
 
 

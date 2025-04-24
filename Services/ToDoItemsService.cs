@@ -106,7 +106,7 @@ namespace Services
             TodoItem todoItem = todoItemAddRequest.ConvertToTodoItem();
 
             //generate 
-            todoItem.Id = Guid.NewGuid();
+           // todoItem.Id = Guid.NewGuid();
             todoItem.UserId = todoItemAddRequest.UserId; //  Set user ownership
 
 
@@ -132,6 +132,8 @@ namespace Services
                 .Where(t => t.IsDeleted)
                 .Select(t => t.ToTodoItemResponse())
                 .ToList();
+
+
         }
 
         /// <summary>
@@ -175,6 +177,7 @@ namespace Services
         public List<ToDoItemResponse> GetPaginatedItems(int pageNumber, int pageSize)
         {
             return _db.TodoItems
+                .Include(t => t.User)
                 .OrderBy(t => t.Id)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).Select(t => t.ToTodoItemResponse()).ToList();
@@ -202,6 +205,31 @@ namespace Services
                 .Select(t => t.ToTodoItemResponse())
                 .ToList();
         }
+
+
+
+public List<UserWithTodoItemsResponse> GetAllTodoItemsGroupedByUser()
+{
+    return _db.TodoItems
+        .Include(t => t.User)
+        
+        .GroupBy(t => new { t.User.Id, t.User.Username })
+        .Select(g => new UserWithTodoItemsResponse
+        {
+            UserId = g.Key.Id,
+            UserName = g.Key.Username,
+            TodoItems = g.Select(t => new ToDoItemResponse
+            {
+                Id = t.Id,
+                Title = t.Title,
+                Description = t.Description,
+                IsCompleted = t.IsCompleted,
+                DueDate = t.DueDate
+            }).ToList()
+        })
+        .ToList();
+}
+
 
      
 
