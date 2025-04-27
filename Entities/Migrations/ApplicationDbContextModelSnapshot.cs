@@ -32,7 +32,12 @@ namespace Entities.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Roles");
 
@@ -55,6 +60,17 @@ namespace Entities.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreationDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<Guid?>("DeleteBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeleteDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -64,11 +80,6 @@ namespace Entities.Migrations
                         .HasColumnType("datetime");
 
                     b.Property<bool>("IsCompleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
@@ -91,20 +102,20 @@ namespace Entities.Migrations
                         new
                         {
                             Id = new Guid("db2f25b9-2149-4f75-aca0-f5baab2df9f4"),
+                            CreationDate = new DateTime(2025, 4, 24, 15, 1, 25, 912, DateTimeKind.Local).AddTicks(5759),
                             Description = "This is the first task.",
-                            DueDate = new DateTime(2025, 4, 24, 15, 10, 15, 402, DateTimeKind.Local).AddTicks(4988),
+                            DueDate = new DateTime(2025, 4, 25, 15, 1, 25, 912, DateTimeKind.Local).AddTicks(5742),
                             IsCompleted = false,
-                            IsDeleted = false,
                             Title = "First Task",
                             UserId = new Guid("44c091c5-be82-4b3f-a9e0-eb195d2e62af")
                         },
                         new
                         {
                             Id = new Guid("4f1790de-f460-409d-8c27-67089bcbed2d"),
+                            CreationDate = new DateTime(2025, 4, 24, 15, 1, 25, 912, DateTimeKind.Local).AddTicks(5762),
                             Description = "This is the second task.",
-                            DueDate = new DateTime(2025, 4, 25, 15, 10, 15, 402, DateTimeKind.Local).AddTicks(5008),
+                            DueDate = new DateTime(2025, 4, 26, 15, 1, 25, 912, DateTimeKind.Local).AddTicks(5761),
                             IsCompleted = false,
-                            IsDeleted = false,
                             Title = "Second Task",
                             UserId = new Guid("3625e573-9f81-46a1-80f9-1100306169f5")
                         });
@@ -138,31 +149,38 @@ namespace Entities.Migrations
                         new
                         {
                             Id = new Guid("fac962ac-e397-47e2-996f-cc8e728a7f8f"),
-                            PasswordHash = "$2a$11$3FZA6Q1DbDPmZuyD3faMoexMPPJN8hygFu.iw5ZHa38FcvsjO41ny",
+                            PasswordHash = "$2a$11$8OPZ4Ufsaq0vhpxOTqjMp.6cvOUY7jIe3Vt4vFItIOf.t6RMuOY0q",
                             RoleId = new Guid("8dfc85ca-f780-43b1-b908-97ee9c90ef42"),
                             Username = "admin"
                         },
                         new
                         {
                             Id = new Guid("44c091c5-be82-4b3f-a9e0-eb195d2e62af"),
-                            PasswordHash = "$2a$11$Lgg.oI6HxlIyyNG9TP9eAuWyNZrAehWPCGt55dtUw0ykcVNBgDG32",
+                            PasswordHash = "$2a$11$oXueGR2jikCaEpwhVv.uyuPg6Nzmz4whMO6jtOEfvqhF6KUID2UC.",
                             RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
                             Username = "user1"
                         },
                         new
                         {
                             Id = new Guid("3625e573-9f81-46a1-80f9-1100306169f5"),
-                            PasswordHash = "$2a$11$mriFSg8EnEuHliFFwl98heUfCAkXST.ssXitfTSQq5h9LEinrZ43e",
+                            PasswordHash = "$2a$11$vsxnzp0pm20gT4glVu3VFuhyqz.no6xi/jN7V6kTLFKt/0QUpJOAK",
                             RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
                             Username = "user2"
                         },
                         new
                         {
                             Id = new Guid("59dfec42-4c48-407f-b9de-1ab16a845624"),
-                            PasswordHash = "$2a$11$N9hVGIHD.xQJBIUnS4JOD.DBA/OAV/aUvNVsnslKHfPm2C3aHCcvO",
+                            PasswordHash = "$2a$11$9WQBfP7xxgZtu/3wCCiAFeQdWGi9auZpl9Kj0zN9NiHK29PTB2NSS",
                             RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
                             Username = "user3"
                         });
+                });
+
+            modelBuilder.Entity("Entities.Role", b =>
+                {
+                    b.HasOne("Entities.User", null)
+                        .WithMany("Roles")
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Entities.TodoItem", b =>
@@ -181,7 +199,7 @@ namespace Entities.Migrations
                     b.HasOne("Entities.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Role");
@@ -194,6 +212,8 @@ namespace Entities.Migrations
 
             modelBuilder.Entity("Entities.User", b =>
                 {
+                    b.Navigation("Roles");
+
                     b.Navigation("TodoItems");
                 });
 #pragma warning restore 612, 618

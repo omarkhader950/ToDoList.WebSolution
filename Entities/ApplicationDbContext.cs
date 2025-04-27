@@ -24,19 +24,19 @@ namespace Entities
             var roleAdminId = Guid.Parse("8DFC85CA-F780-43B1-B908-97EE9C90EF42");
             var roleUserId = Guid.Parse("7B858E14-D92D-43E0-AFE9-261365D067AD");
 
-            // Hash the passwords
+            // Hash passwords
             var adminPasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123");
             var user1PasswordHash = BCrypt.Net.BCrypt.HashPassword("User1@123");
             var user2PasswordHash = BCrypt.Net.BCrypt.HashPassword("User2@123");
             var user3PasswordHash = BCrypt.Net.BCrypt.HashPassword("User3@123");
 
-            // Configure Role entity
+            // Seed Roles
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = roleAdminId, Name = "Admin" },
                 new Role { Id = roleUserId, Name = "User" }
             );
 
-            // Configure User entity
+            // Seed Users
             modelBuilder.Entity<User>().HasData(
                 new User { Id = adminId, Username = "admin", PasswordHash = adminPasswordHash, RoleId = roleAdminId },
                 new User { Id = user1Id, Username = "user1", PasswordHash = user1PasswordHash, RoleId = roleUserId },
@@ -44,13 +44,14 @@ namespace Entities
                 new User { Id = user3Id, Username = "user3", PasswordHash = user3PasswordHash, RoleId = roleUserId }
             );
 
-            // Configure relationships
+            // User-Role relationship
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Role)
                 .WithMany(r => r.Users)
-                .HasForeignKey(u => u.RoleId);
+                .HasForeignKey(u => u.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            // Configure TodoItem
+            // TodoItem configuration
             modelBuilder.Entity<TodoItem>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -59,7 +60,7 @@ namespace Entities
                 entity.Property(e => e.Description).HasMaxLength(500);
                 entity.Property(e => e.IsCompleted).HasDefaultValue(false);
                 entity.Property(e => e.DueDate).HasColumnType("datetime");
-                entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+                entity.Property(e => e.CreationDate).HasColumnType("datetime").HasDefaultValueSql("GETDATE()");
 
                 entity.HasOne(e => e.User)
                       .WithMany(u => u.TodoItems)
@@ -67,7 +68,8 @@ namespace Entities
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            modelBuilder.Entity<TodoItem>().HasQueryFilter(t => !t.IsDeleted);
+            // Soft delete filter
+            modelBuilder.Entity<TodoItem>().HasQueryFilter(t => t.DeleteBy == null && t.DeleteDate == null);
 
             // Seed TodoItems
             modelBuilder.Entity<TodoItem>().HasData(
@@ -78,6 +80,7 @@ namespace Entities
                     Description = "This is the first task.",
                     IsCompleted = false,
                     DueDate = DateTime.Now.AddDays(1),
+                    CreationDate = DateTime.Now,
                     UserId = user1Id
                 },
                 new TodoItem
@@ -87,6 +90,7 @@ namespace Entities
                     Description = "This is the second task.",
                     IsCompleted = false,
                     DueDate = DateTime.Now.AddDays(2),
+                    CreationDate = DateTime.Now,
                     UserId = user2Id
                 }
             );

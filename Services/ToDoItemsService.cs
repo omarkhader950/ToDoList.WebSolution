@@ -1,4 +1,5 @@
 ﻿using Entities;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
 using ServiceContracts;
@@ -24,98 +25,84 @@ namespace Services
 
         private ToDoItemResponse ConvertTodoItemToDoItemResponse(TodoItem todoItem)
         {
-            ToDoItemResponse toDoItemResponse = todoItem.ToTodoItemResponse();
-            return toDoItemResponse;
+           
+
+            return todoItem.Adapt<ToDoItemResponse>();
         }
 
        
 
-        public List<ToDoItemResponse> GetAllTodoItems()
+        public async Task<List<ToDoItemResponse>> GetAllTodoItemsAsync()
         {
 
-            return _db.TodoItems
-          .Include(t => t.User) 
-          .ToList()
-          .Select(temp => ConvertTodoItemToDoItemResponse(temp))
-          .ToList();
+            return (await _db.TodoItems
+                 .Include(t => t.User)
+                 .ToListAsync())
+             .Select(todo => todo.Adapt<ToDoItemResponse>())
+             .ToList();
 
         }
 
 
 
-        public ToDoItemResponse? GetTodoItemById(Guid? todoItemId, Guid userId)
+        public async Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId)
         {
             if (todoItemId == null)
                 return null;
 
-            TodoItem? todoItem = _db.TodoItems.Include(t => t.User)
-              .FirstOrDefault(temp => temp.Id == todoItemId && temp.UserId == userId);
-            if (todoItem == null)
-                return null;
+            var todoItem = await _db.TodoItems
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(temp => temp.Id == todoItemId && temp.UserId == userId);
 
-            return ConvertTodoItemToDoItemResponse(todoItem);
+            return todoItem == null ? null : ConvertTodoItemToDoItemResponse(todoItem);
         }
 
-        public ToDoItemResponse UpdateTodoItem(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid userId)
+        public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid userId)
         {
             if (todoItemUpdateRequest == null)
-                throw new ArgumentNullException(nameof(TodoItem));
+                throw new ArgumentNullException(nameof(todoItemUpdateRequest));
 
-          
+            var matchingTodoItem = await _db.TodoItems
+                .FirstOrDefaultAsync(temp => temp.Id == todoItemUpdateRequest.Id && temp.UserId == userId);
 
-            //get matching  object to update
-            TodoItem? matchingTodoItem = _db.TodoItems
-              .FirstOrDefault(temp => temp.Id == todoItemUpdateRequest.Id && temp.UserId == userId);
             if (matchingTodoItem == null)
-            {
-                throw new ArgumentException("Given person id doesn't exist");
-            }
+                throw new ArgumentException("Given todo item ID doesn't exist.");
 
-            //update all details
             matchingTodoItem.Title = todoItemUpdateRequest.Title;
             matchingTodoItem.Description = todoItemUpdateRequest.Description;
             matchingTodoItem.IsCompleted = todoItemUpdateRequest.IsCompleted;
-          //  matchingTodoItem.DueDate = todoItemUpdateRequest.DueDate; 
 
-
-            _db.SaveChanges(); //UPDATE
+            await _db.SaveChangesAsync();
 
             return ConvertTodoItemToDoItemResponse(matchingTodoItem);
         }
 
-        public bool DeleteTodoItem(Guid? todoItemId, Guid userId)
+        public async Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid userId)
         {
             if (todoItemId == null)
                 throw new ArgumentNullException(nameof(todoItemId));
 
-            // Because of the global filter, this will auto-exclude deleted items
-            var todoItem = _db.TodoItems.FirstOrDefault(temp => temp.Id == todoItemId && temp.UserId == userId);
+            var todoItem = await _db.TodoItems
+                .FirstOrDefaultAsync(temp => temp.Id == todoItemId && temp.UserId == userId);
+
             if (todoItem == null)
                 return false;
 
-            // Instead of removing it, just mark as deleted
-            todoItem.IsDeleted = true;
-            _db.SaveChanges();
+            todoItem.DeleteBy = todoItem.UserId;
+            todoItem.DeleteDate = DateTime.UtcNow;
 
+            await _db.SaveChangesAsync();
             return true;
         }
 
-        public ToDoItemResponse AddTodoItem(TodoItemAddRequest? todoItemAddRequest)
+        public async Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest)
         {
-            //convert personAddRequest into Person type
-            TodoItem todoItem = todoItemAddRequest.ConvertToTodoItem();
+            var todoItem = todoItemAddRequest.ConvertToTodoItem();
+            todoItem.UserId = todoItemAddRequest.UserId;
 
-            //generate 
-           // todoItem.Id = Guid.NewGuid();
-            todoItem.UserId = todoItemAddRequest.UserId; //  Set user ownership
+            await _db.TodoItems.AddAsync(todoItem);
+            await _db.SaveChangesAsync();
 
-
-            //add person object to persons list
-            _db.TodoItems.Add(todoItem);
-            _db.SaveChanges();
-            //_db.sp_InsertPerson(person);
-
-            //convert the Person object into PersonResponse type
             return ConvertTodoItemToDoItemResponse(todoItem);
         }
 
@@ -124,14 +111,14 @@ namespace Services
         /// Retrieves all soft-deleted todo items by ignoring global query filters.
         /// </summary>
         /// <returns>List of deleted todo items mapped to response models.</returns>
-        public List<ToDoItemResponse> GetAllDeletedItems()
+        public async Task<List<ToDoItemResponse>> GetAllDeletedItemsAsync()
         {
-            return _db.TodoItems
-                .Include(t => t.User)
-                .IgnoreQueryFilters()
-                .Where(t => t.IsDeleted)
-                .Select(t => t.ToTodoItemResponse())
-                .ToList();
+            return await _db.TodoItems
+                 .IgnoreQueryFilters()
+                 .Where(t => t.DeleteBy != null)
+                 .Include(t => t.User)
+                 .Select(t => t.Adapt<ToDoItemResponse>())
+                 .ToListAsync();
 
 
         }
@@ -142,16 +129,18 @@ namespace Services
         /// </summary>
         /// <param name="todoItemId">The ID of the todo item to restore.</param>
         /// <returns>True if the item was found and restored; otherwise, false.</returns>
-        public bool RestoreTodoItem(Guid todoItemId)
+        public async Task<bool> RestoreTodoItemAsync(Guid todoItemId)
         {
-            var item = _db.TodoItems
-                .IgnoreQueryFilters()
-                .FirstOrDefault(t => t.Id == todoItemId && t.IsDeleted);
+            var item = await _db.TodoItems
+         .IgnoreQueryFilters()
+         .FirstOrDefaultAsync(t => t.Id == todoItemId && t.DeleteBy != null);
 
-            if (item == null) return false;
+            if (item == null)
+                return false;
 
-            item.IsDeleted = false;
-            _db.SaveChanges();
+            item.DeleteBy = null;
+            item.DeleteDate = null;
+            await _db.SaveChangesAsync();
             return true;
         }
 
@@ -161,77 +150,82 @@ namespace Services
         /// </summary>
         /// <param name="todoItemId">The ID of the soft-deleted todo item to retrieve.</param>
         /// <returns>The soft-deleted todo item mapped to a response model, or null if not found.</returns>
-        public ToDoItemResponse? GetDeletedItemById(Guid todoItemId)
+        public async Task<ToDoItemResponse?> GetDeletedItemByIdAsync(Guid todoItemId)
         {
-            var item = _db.TodoItems
-                .Include(t => t.User)
-                .IgnoreQueryFilters()
-                .FirstOrDefault(t => t.Id == todoItemId && t.IsDeleted);
+            var item = await _db.TodoItems
+               .IgnoreQueryFilters()
+               .Include(t => t.User)
+               .FirstOrDefaultAsync(t => t.Id == todoItemId);
 
-            return item?.ToTodoItemResponse();
+            return item?.Adapt<ToDoItemResponse>();
         }
 
 
 
        
-        public List<ToDoItemResponse> GetPaginatedItems(int pageNumber, int pageSize)
+        public async Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(int pageNumber, int pageSize)
         {
-            return _db.TodoItems
-                .Include(t => t.User)
-                .OrderBy(t => t.Id)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize).Select(t => t.ToTodoItemResponse()).ToList();
-     
+            return await _db.TodoItems
+               .Include(t => t.User)
+               .OrderBy(t => t.Id)
+               .Skip((pageNumber - 1) * pageSize)
+               .Take(pageSize)
+               .Select(t => t.Adapt<ToDoItemResponse>())
+               .ToListAsync();
+
         }
 
-        public List<ToDoItemResponse> GetPaginatedItemsForUser(Guid userId, int pageNumber, int pageSize)
+        public async Task<List<ToDoItemResponse>> GetPaginatedItemsForUserAsync(Guid userId, int pageNumber, int pageSize)
         {
-            return _db.TodoItems
+            return await _db.TodoItems
+              .Include(t => t.User)
+              .Where(t => t.UserId == userId && t.DeleteBy == null) // Active items only
+              .OrderBy(t => t.Id)
+              .Skip((pageNumber - 1) * pageSize)
+              .Take(pageSize)
+              .Select(t => t.Adapt<ToDoItemResponse>())
+              .ToListAsync();
+        }
+
+
+
+        public async Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync(Guid userId)
+        {
+            return await _db.TodoItems
+            .Include(t => t.User)
+            .Where(t => t.UserId == userId && t.DeleteBy == null)
+            .Select(t => t.Adapt<ToDoItemResponse>())
+            .ToListAsync();
+        }
+
+
+
+public async Task<List<UserWithTodoItemsResponse>> GetAllTodoItemsGroupedByUserAsync()
+        {
+            var items = await _db.TodoItems
                 .Include(t => t.User)
-                .Where(t => t.UserId == userId && !t.IsDeleted)
-                .OrderBy(t => t.Id)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .Select(t => ConvertTodoItemToDoItemResponse(t))
+                .ToListAsync();
+
+            return items
+                .GroupBy(t => new { t.User.Id, t.User.Username })
+                .Select(g => new UserWithTodoItemsResponse
+                {
+                    UserId = g.Key.Id,
+                    UserName = g.Key.Username,
+                    TodoItems = g.Select(t => new ToDoItemResponse
+                    {
+                        Id = t.Id,
+                        Title = t.Title,
+                        Description = t.Description,
+                        IsCompleted = t.IsCompleted,
+                        DueDate = t.DueDate
+                    }).ToList()
+                })
                 .ToList();
         }
 
 
 
-        public List<ToDoItemResponse> GetAllTodoItemsByUser(Guid userId)
-        {
-            return _db.TodoItems.Include(t => t.User)
-                .Where(t => t.UserId == userId && !t.IsDeleted)
-                .Select(t => t.ToTodoItemResponse())
-                .ToList();
-        }
-
-
-
-public List<UserWithTodoItemsResponse> GetAllTodoItemsGroupedByUser()
-{
-    return _db.TodoItems
-        .Include(t => t.User)
-        
-        .GroupBy(t => new { t.User.Id, t.User.Username })
-        .Select(g => new UserWithTodoItemsResponse
-        {
-            UserId = g.Key.Id,
-            UserName = g.Key.Username,
-            TodoItems = g.Select(t => new ToDoItemResponse
-            {
-                Id = t.Id,
-                Title = t.Title,
-                Description = t.Description,
-                IsCompleted = t.IsCompleted,
-                DueDate = t.DueDate
-            }).ToList()
-        })
-        .ToList();
-}
-
-
-     
 
     }
 }

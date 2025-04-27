@@ -12,61 +12,64 @@ namespace ServiceContracts
         /// </summary>
         /// <param name="todoItemAddRequest">Task to add</param>
         /// <returns>Returns the task details along with the newly generated ID</returns>
-        ToDoItemResponse AddTodoItem(TodoItemAddRequest? todoItemAddRequest);
+        Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest);
+
 
         /// <summary>
         /// Returns all TodoItems (admin or general case).
         /// </summary>
         /// <returns>Returns a list of TodoItemResponse objects</returns>
-        List<ToDoItemResponse> GetAllTodoItems();
+        Task<List<ToDoItemResponse>> GetAllTodoItemsAsync();
+
 
         /// <summary>
         /// Returns all TodoItems for a specific user.
         /// </summary>
-        List<ToDoItemResponse> GetAllTodoItemsByUser(Guid userId);
+        Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync(Guid userId);
 
         /// <summary>
         /// Returns a paginated list of TodoItems.
         /// </summary>
-        List<ToDoItemResponse> GetPaginatedItems(int pageNumber, int pageSize);
+        Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(int pageNumber, int pageSize);
+
 
         /// <summary>
         /// Returns a paginated list of TodoItems for a specific user.
         /// </summary>
-        List<ToDoItemResponse> GetPaginatedItemsForUser(Guid userId, int pageNumber, int pageSize);
+        Task<List<ToDoItemResponse>> GetPaginatedItemsForUserAsync(Guid userId, int pageNumber, int pageSize);
 
         /// <summary>
         /// Gets a TodoItem by ID and UserId.
         /// </summary>
-        ToDoItemResponse? GetTodoItemById(Guid? todoItemId, Guid userId);
+        Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId);
 
         /// <summary>
         /// Updates the specified TodoItem based on its ID.
         /// </summary>
-        ToDoItemResponse UpdateTodoItem(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid userId);
+        Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid userId);
 
         /// <summary>
         /// Deletes a TodoItem by its ID and UserId.
         /// </summary>
-        bool DeleteTodoItem(Guid? todoItemId, Guid userId);
+        Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid userId);
 
         /// <summary>
         /// Gets all deleted items (admin use).
         /// </summary>
-        List<ToDoItemResponse> GetAllDeletedItems();
+        Task<List<ToDoItemResponse>> GetAllDeletedItemsAsync();
 
         /// <summary>
         /// Restores a soft-deleted TodoItem by its ID.
         /// </summary>
-        bool RestoreTodoItem(Guid todoItemId);
+        Task<bool> RestoreTodoItemAsync(Guid todoItemId);
 
         /// <summary>
         /// Gets a deleted TodoItem by ID.
         /// </summary>
-        ToDoItemResponse? GetDeletedItemById(Guid todoItemId);
+        Task<ToDoItemResponse?> GetDeletedItemByIdAsync(Guid todoItemId);
 
 
 
-        public List<UserWithTodoItemsResponse> GetAllTodoItemsGroupedByUser();
+        Task<List<UserWithTodoItemsResponse>> GetAllTodoItemsGroupedByUserAsync();
     }
 }

@@ -22,15 +22,15 @@ namespace ToDoList.WebAPI.Controllers
 
         // POST: api/todoitems
         [HttpPost]
-        public IActionResult AddTodoItem([FromBody] TodoItemAddRequest request)
+        public async Task<IActionResult> AddTodoItem([FromBody] TodoItemAddRequest request)
         {
             if (request == null) return BadRequest();
 
-            var createdItem = _todoItemsService.AddTodoItem(request);
+            var createdItem = await _todoItemsService.AddTodoItemAsync(request);
             return CreatedAtAction(nameof(GetTodoItemById), new { todoItemId = createdItem.Id }, createdItem);
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         // GET: api/todoitems
         //[HttpGet]
         //public IActionResult GetAllTodoItems()
@@ -41,7 +41,7 @@ namespace ToDoList.WebAPI.Controllers
 
         // GET: api/todoitems/{todoItemId}
         [HttpGet("{todoItemId}")]
-        public IActionResult GetTodoItemById(Guid todoItemId)
+        public async Task<IActionResult> GetTodoItemById(Guid todoItemId)
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             
@@ -50,7 +50,7 @@ namespace ToDoList.WebAPI.Controllers
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
                 return Unauthorized("Invalid or missing user ID claim.");
 
-            var item = _todoItemsService.GetTodoItemById(todoItemId, userId);
+            var item = await _todoItemsService.GetTodoItemByIdAsync(todoItemId, userId);
             if (item == null) return NotFound();
 
             return Ok(item);
@@ -60,7 +60,7 @@ namespace ToDoList.WebAPI.Controllers
         // PUT: api/todoitems
         [HttpPut]
         [Authorize(Roles = "Admin")]
-        public IActionResult UpdateTodoItem([FromBody] ToDoItemUpdateRequest request)
+        public async Task<IActionResult> UpdateTodoItem([FromBody] ToDoItemUpdateRequest request)
         {
             if (request == null) return BadRequest();
 
@@ -68,7 +68,7 @@ namespace ToDoList.WebAPI.Controllers
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
                 return Unauthorized("Invalid or missing user ID claim.");
 
-            var updated = _todoItemsService.UpdateTodoItem(request, userId);
+            var updated = await _todoItemsService.UpdateTodoItemAsync(request, userId);
             return Ok(updated);
         }
 
@@ -76,13 +76,13 @@ namespace ToDoList.WebAPI.Controllers
         [Authorize(Roles = "Admin")]
         // DELETE: api/todoitems/{todoItemId}
         [HttpDelete("{todoItemId}")]
-        public IActionResult DeleteTodoItem(Guid todoItemId)
+        public async Task<IActionResult> DeleteTodoItem(Guid todoItemId)
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
                 return Unauthorized("Invalid or missing user ID claim.");
 
-            var success = _todoItemsService.DeleteTodoItem(todoItemId, userId);
+            var success = await _todoItemsService.DeleteTodoItemAsync(todoItemId, userId);
             if (!success) return NotFound();
 
             return NoContent();
@@ -92,9 +92,9 @@ namespace ToDoList.WebAPI.Controllers
         [Authorize(Roles = "Admin")]
         // GET: api/todoitems/deleted
         [HttpGet("deleted")]
-        public ActionResult<List<ToDoItemResponse>> GetDeletedTodoItems()
+        public async Task<ActionResult<List<ToDoItemResponse>>> GetDeletedTodoItems()
         {
-            var deletedItems = _todoItemsService.GetAllDeletedItems();
+            var deletedItems = await _todoItemsService.GetAllDeletedItemsAsync();
             return Ok(deletedItems);
         }
 
@@ -102,9 +102,9 @@ namespace ToDoList.WebAPI.Controllers
         [Authorize(Roles = "Admin")]
         // PATCH: api/todoitems/restore/{todoItemId}
         [HttpPatch("restore/{todoItemId}")]
-        public IActionResult RestoreTodoItem(Guid todoItemId)
+        public async Task<IActionResult> RestoreTodoItem(Guid todoItemId)
         {
-            var restored = _todoItemsService.RestoreTodoItem(todoItemId);
+            var restored = await _todoItemsService.RestoreTodoItemAsync(todoItemId);
             if (!restored)
                 return NotFound();
 
@@ -114,9 +114,9 @@ namespace ToDoList.WebAPI.Controllers
 
         // GET: api/todoitems/deleted/{todoItemId}
         [HttpGet("deleted/{todoItemId}")]
-        public ActionResult<ToDoItemResponse> GetDeletedTodoItemById(Guid todoItemId)
+        public async Task <ActionResult<ToDoItemResponse>> GetDeletedTodoItemById(Guid todoItemId)
         {
-            var item = _todoItemsService.GetDeletedItemById(todoItemId);
+            var item = await _todoItemsService.GetDeletedItemByIdAsync(todoItemId);
 
             if (item == null)
                 return NotFound();
@@ -127,18 +127,18 @@ namespace ToDoList.WebAPI.Controllers
        
         // GET: api/todoitems/paginated
         [HttpGet("paginated")]
-        public IActionResult GetPaginatedTodoItems([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 3)
+        public async Task<IActionResult> GetPaginatedTodoItems([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 3)
         {
             if (pageNumber <= 0 || pageSize <= 0)
                 return BadRequest("Page number and page size must be greater than 0.");
 
-            var paginatedItems = _todoItemsService.GetPaginatedItems(pageNumber, pageSize);
+            var paginatedItems = await _todoItemsService.GetPaginatedItemsAsync(pageNumber, pageSize);
             return Ok(paginatedItems);
         }
 
         // GET: api/todoitems/by-user
         [HttpGet("by-user")]
-        public IActionResult GetTodoItemsByUser()
+        public async Task<IActionResult> GetTodoItemsByUser()
         {
             // Extract user ID from the JWT token claims
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
@@ -147,7 +147,7 @@ namespace ToDoList.WebAPI.Controllers
                 return Unauthorized("Invalid or missing user ID claim.");
 
             // Get the items by user
-            var userItems = _todoItemsService.GetAllTodoItemsByUser(userId);
+            var userItems = await _todoItemsService.GetAllTodoItemsByUserAsync(userId);
             return Ok(userItems);
         }
 
@@ -155,9 +155,9 @@ namespace ToDoList.WebAPI.Controllers
         // GET: api/todoitems/admin/by-user/{userId}
         [HttpGet("admin/by-user/{userId}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult GetTodoItemsByUserIdAsAdmin(Guid userId)
+        public async Task<IActionResult> GetTodoItemsByUserIdAsAdmin(Guid userId)
         {
-            var items = _todoItemsService.GetAllTodoItemsByUser(userId);
+            var items = await _todoItemsService.GetAllTodoItemsByUserAsync(userId);
             return Ok(items);
         }
 
@@ -165,9 +165,9 @@ namespace ToDoList.WebAPI.Controllers
         [Authorize(Roles = "Admin")]
         // GET: api/todoitems
         [HttpGet]
-        public ActionResult<List<UserWithTodoItemsResponse>> GetAllGroupedByUser()
+        public async Task<ActionResult<List<UserWithTodoItemsResponse>>> GetAllGroupedByUser()
         {
-            var result = _todoItemsService.GetAllTodoItemsGroupedByUser();
+            var result = await _todoItemsService.GetAllTodoItemsGroupedByUserAsync();
 
             return Ok(result);
         }

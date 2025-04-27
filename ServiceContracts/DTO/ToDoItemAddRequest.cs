@@ -1,4 +1,5 @@
 ﻿using Entities;
+using Mapster;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -8,18 +9,8 @@ using System.Threading.Tasks;
 
 namespace ServiceContracts.DTO
 {
-    public class TodoItemAddRequest
+    public class TodoItemAddRequest : ToDoDtoBase
     {
-        [Required(ErrorMessage = "Title is required")]
-        [MaxLength(100, ErrorMessage = "Title can't be more than 100 characters")]
-        public string? Title { get; set; }
-
-        [MaxLength(500, ErrorMessage = "Description can't be more than 500 characters")]
-        public string? Description { get; set; }
-
-        [Required(ErrorMessage = "Due date is required")]
-        public DateTime? DueDate { get; set; }
-
 
 
         public Guid UserId { get; set; }
@@ -30,13 +21,9 @@ namespace ServiceContracts.DTO
         /// <returns></returns>
         public TodoItem ConvertToTodoItem()
         {
-            return new TodoItem
-            {
-                Title = Title!,
-                Description = Description,
-                IsCompleted = false,
-                DueDate = DueDate ?? DateTime.Now
-            };
+            var todoItem = this.Adapt<TodoItem>(); // Magic happens here
+            todoItem.IsCompleted = false; // Set defaults if needed
+            return todoItem;
         }
     }
-}
+    }

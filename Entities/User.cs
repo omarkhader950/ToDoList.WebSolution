@@ -28,5 +28,9 @@ namespace Entities
 
         // Navigation property to represent the list of To-Do items created by the user
         public List<TodoItem> TodoItems { get; set; } = new List<TodoItem>();
+
+
+        public ICollection<Role> Roles { get; set; } = new List<Role>();
+
     }
 }
