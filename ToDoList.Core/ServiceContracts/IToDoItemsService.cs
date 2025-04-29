@@ -52,7 +52,7 @@ namespace ServiceContracts
         /// <summary>
         /// Deletes a TodoItem by its ID and UserId.
         /// </summary>
-        Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid userId);
+        Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid tokenUserId, bool isAdmin);
 
         /// <summary>
         /// Gets all deleted items (admin use).

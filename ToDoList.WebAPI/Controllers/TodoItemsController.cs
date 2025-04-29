@@ -21,6 +21,10 @@ namespace ToDoList.WebAPI.Controllers
             _todoItemsService = todoItemsService;
         }
 
+
+
+
+        // admin and user in the same end point 
         // POST: api/todoitems
         [HttpPost]
         public async Task<IActionResult> AddTodoItem([FromBody] TodoItemAddRequest request)
@@ -79,16 +83,19 @@ namespace ToDoList.WebAPI.Controllers
         }
 
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         // DELETE: api/todoitems/{todoItemId}
         [HttpDelete("{todoItemId}")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> DeleteTodoItem(Guid todoItemId)
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
                 return Unauthorized("Invalid or missing user ID claim.");
 
-            var success = await _todoItemsService.DeleteTodoItemAsync(todoItemId, userId);
+            bool isAdmin = User.IsInRole("Admin");
+
+            var success = await _todoItemsService.DeleteTodoItemAsync(todoItemId, tokenUserId, isAdmin);
             if (!success) return NotFound();
 
             return NoContent();
@@ -105,6 +112,21 @@ namespace ToDoList.WebAPI.Controllers
         }
 
 
+
+
+
+        // GET: api/todoitems/deleted/{todoItemId}
+        [HttpGet("deleted/{todoItemId}")]
+        public async Task<ActionResult<ToDoItemResponse>> GetDeletedTodoItemById(Guid todoItemId)
+        {
+            var item = await _todoItemsService.GetDeletedItemByIdAsync(todoItemId);
+
+            if (item == null)
+                return NotFound();
+
+            return Ok(item);
+        }
+
         [Authorize(Roles = "Admin")]
         // PATCH: api/todoitems/restore/{todoItemId}
         [HttpPatch("restore/{todoItemId}")]
@@ -118,17 +140,6 @@ namespace ToDoList.WebAPI.Controllers
         }
 
 
-        // GET: api/todoitems/deleted/{todoItemId}
-        [HttpGet("deleted/{todoItemId}")]
-        public async Task <ActionResult<ToDoItemResponse>> GetDeletedTodoItemById(Guid todoItemId)
-        {
-            var item = await _todoItemsService.GetDeletedItemByIdAsync(todoItemId);
-
-            if (item == null)
-                return NotFound();
-
-            return Ok(item);
-        }
 
        
         // GET: api/todoitems/paginated

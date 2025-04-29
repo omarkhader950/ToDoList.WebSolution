@@ -80,23 +80,32 @@ namespace Services
             return matchingTodoItem.Adapt<ToDoItemResponse>(); 
         }
 
-        public async Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid userId)
+        public async Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid tokenUserId, bool isAdmin)
         {
-            if (todoItemId == null)
-                throw new ArgumentNullException(nameof(todoItemId));
+            TodoItem? todoItem;
 
-            var todoItem = await _db.TodoItems
-                .FirstOrDefaultAsync(temp => temp.Id == todoItemId && temp.UserId == userId);
+            if (isAdmin)
+            {
+                // Admins can delete any item
+                todoItem = await _db.TodoItems.FirstOrDefaultAsync(t => t.Id == todoItemId);
+            }
+            else
+            {
+                // Regular users can only delete their own items
+                todoItem = await _db.TodoItems.FirstOrDefaultAsync(t => t.Id == todoItemId && t.UserId == tokenUserId);
+            }
 
             if (todoItem == null)
                 return false;
 
-            todoItem.DeleteBy = todoItem.UserId;
+            todoItem.DeleteBy = tokenUserId;
             todoItem.DeleteDate = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
             return true;
         }
+
+
 
         public async Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest, Guid userId)
         {
@@ -228,8 +237,6 @@ public async Task<List<UserWithTodoItemsResponse>> GetAllTodoItemsGroupedByUserA
                 })
                 .ToList();
         }
-
-
 
 
     }
