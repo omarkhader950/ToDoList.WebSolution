@@ -27,18 +27,23 @@ namespace ToDoList.WebAPI.Controllers
         {
             if (request == null) return BadRequest();
 
-            var createdItem = await _todoItemsService.AddTodoItemAsync(request);
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
+                return Unauthorized("Invalid or missing user ID claim.");
+
+            // Check if the current user is an Admin
+            bool isAdmin = User.IsInRole("Admin");
+
+            // Decide which userId to assign:
+            Guid finalUserId = isAdmin && request.UserId.HasValue
+                ? request.UserId.Value    // Admin provides it
+                : tokenUserId;            // Regular user gets it from token
+
+            var createdItem = await _todoItemsService.AddTodoItemAsync(request, finalUserId);
             return CreatedAtAction(nameof(GetTodoItemById), new { todoItemId = createdItem.Id }, createdItem);
         }
 
-        //[Authorize(Roles = "Admin")]
-        // GET: api/todoitems
-        //[HttpGet]
-        //public IActionResult GetAllTodoItems()
-        //{
-        //    var items = _todoItemsService.GetAllTodoItems();
-        //    return Ok(items);
-        //}
+     
 
         // GET: api/todoitems/{todoItemId}
         [HttpGet("{todoItemId}")]

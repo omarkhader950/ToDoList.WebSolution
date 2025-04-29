@@ -98,10 +98,12 @@ namespace Services
             return true;
         }
 
-        public async Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest)
+        public async Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest, Guid userId)
         {
+
+            
             var todoItem = todoItemAddRequest.Adapt<TodoItem>();
-            todoItem.UserId = todoItemAddRequest.UserId;
+            todoItem.UserId = userId;
 
             await _db.TodoItems.AddAsync(todoItem);
             await _db.SaveChangesAsync();

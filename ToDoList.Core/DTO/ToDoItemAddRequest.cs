@@ -11,8 +11,8 @@ namespace ServiceContracts.DTO
     public class TodoItemAddRequest : ToDoDtoBase
     {
 
-
-        public Guid UserId { get; set; }
+        // Optional — only used by Admins
+        public Guid? UserId { get; set; }
 
         ///// <summary>
         ///// Converts this AddRequest to a TodoItem entity.

@@ -13,7 +13,7 @@ namespace ServiceContracts
         /// </summary>
         /// <param name="todoItemAddRequest">Task to add</param>
         /// <returns>Returns the task details along with the newly generated ID</returns>
-        Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest);
+        Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest, Guid userId);
 
 
         /// <summary>
