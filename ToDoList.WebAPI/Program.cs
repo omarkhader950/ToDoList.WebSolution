@@ -1,9 +1,12 @@
 using Entities;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ServiceContracts;
 using Services;
+using System.Reflection;
 using System.Text;
+using ToDoList.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +16,8 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IToDoItemsService, ToDoItemsService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+
+
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {

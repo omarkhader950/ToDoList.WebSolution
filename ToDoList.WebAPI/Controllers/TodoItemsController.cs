@@ -5,6 +5,7 @@ using ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Services;
+using ToDoList.Core.DTO;
 
 namespace ToDoList.WebAPI.Controllers
 {
