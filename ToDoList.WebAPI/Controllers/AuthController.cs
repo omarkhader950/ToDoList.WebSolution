@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ServiceContracts;
@@ -21,11 +22,11 @@ namespace ToDoList.WebAPI.Controllers
         // POST: api/Auth/register
         [HttpPost("register")]
         [Authorize(Roles = "Admin")]
-        public IActionResult Register([FromBody] RegisterRequest registerRequest)
+        public   async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
             try
             {
-                var user = _usersService.RegisterUser(registerRequest);
+                User user = await _usersService.RegisterUserAsync(registerRequest);
                 return Ok(new
                 {
                     message = "User registered successfully.",
@@ -45,9 +46,9 @@ namespace ToDoList.WebAPI.Controllers
 
         // POST: api/Auth/login
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequest loginRequest)
+        public  async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            var token = _usersService.LoginUser(loginRequest);
+            var token = await _usersService.LoginUserAsync(loginRequest);
 
             if (token == null)
                 return Unauthorized(new { error = "Invalid username or password." });

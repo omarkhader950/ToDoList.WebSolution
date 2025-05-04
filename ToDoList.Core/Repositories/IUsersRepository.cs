@@ -11,7 +11,7 @@ namespace ToDoList.Infrastructure.Repositories
     public interface IUsersRepository
     {
 
-        Task<User> RegisterUserAsync(RegisterRequest user);
+        User RegisterUserAsync(RegisterRequest user);
         Task<string> LoginUserAsync(LoginRequest loginUser);
         Task<User> GetUserByUsernameAsync(string username);
     }

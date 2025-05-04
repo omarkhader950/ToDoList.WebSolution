@@ -1,5 +1,6 @@
 ﻿using Entities;
 using Microsoft.EntityFrameworkCore;
+using ServiceContracts;
 using ServiceContracts.DTO;
 using System;
 using System.Collections.Generic;
@@ -14,19 +15,28 @@ namespace ToDoList.Infrastructure.Repositories
     {
 
         private readonly ApplicationDbContext _dbContext;
+        private readonly IJwtService _jwt;
 
-        public UsersRepository(ApplicationDbContext dbContext) {
+        public UsersRepository(ApplicationDbContext dbContext, IJwtService jwt) {
 
             _dbContext = dbContext;
+            _jwt = jwt;
         }
-        public Task<User?> GetUserByUsernameAsync(string username)
+        public async Task<User?> GetUserByUsernameAsync(string username)
         {
-            throw new NotImplementedException();
+            return await _dbContext.Users.Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Username == username);
         }
 
-        public Task<string?> LoginUserAsync(LoginRequest loginUser)
+        public async Task<string?> LoginUserAsync(LoginRequest loginUser)
         {
-            throw new NotImplementedException();
+            var user = await _dbContext.Users.Include(u => u.Role)
+          .FirstOrDefaultAsync(u => u.Username == loginUser.Username);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginUser.Password, user.PasswordHash))
+                return null;
+
+            return _jwt.GenerateToken(user);
         }
 
         public async Task<User> RegisterUserAsync(RegisterRequest user)
@@ -46,7 +56,7 @@ namespace ToDoList.Infrastructure.Repositories
 
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-            var newUser = new User
+            User newUser = new User
             {
                 Id = Guid.NewGuid(),
                 Username = user.Username,
@@ -55,7 +65,7 @@ namespace ToDoList.Infrastructure.Repositories
             };
 
             _dbContext.Users.Add(newUser);
-             _dbContext.SaveChangesAsync();
+            _dbContext.SaveChangesAsync();
 
             return newUser;
         }
