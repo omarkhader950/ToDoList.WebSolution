@@ -56,7 +56,6 @@ namespace ToDoList.WebAPI.Controllers
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             
 
-
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
                 return Unauthorized("Invalid or missing user ID claim.");
 
@@ -66,7 +65,31 @@ namespace ToDoList.WebAPI.Controllers
             return Ok(item);
         }
 
-       
+        // GET: api/todoitems/by-user
+        [HttpGet("by-user")]
+        public async Task<IActionResult> GetTodoItemsByUser()
+        {
+            // Extract user ID from the JWT token claims
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                return Unauthorized("Invalid or missing user ID claim.");
+
+            // Get the items by user
+            var userItems = await _todoItemsService.GetAllTodoItemsByUserAsync(userId);
+            return Ok(userItems);
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        // GET: api/todoitems
+        [HttpGet]
+        public async Task<ActionResult<List<UserWithTodoItemsResponse>>> GetAllGroupedByUser()
+        {
+            var result = await _todoItemsService.GetAllTodoItemsGroupedByUserAsync();
+
+            return Ok(result);
+        }
         // PUT: api/todoitems
         [HttpPut]
         [Authorize(Roles = "Admin")]
@@ -83,7 +106,7 @@ namespace ToDoList.WebAPI.Controllers
         }
 
 
-        //[Authorize(Roles = "Admin")]
+        
         // DELETE: api/todoitems/{todoItemId}
         [HttpDelete("{todoItemId}")]
         [Authorize(Roles = "User,Admin")]
@@ -114,7 +137,7 @@ namespace ToDoList.WebAPI.Controllers
 
 
 
-
+        [Authorize(Roles ="Admin")]
         // GET: api/todoitems/deleted/{todoItemId}
         [HttpGet("deleted/{todoItemId}")]
         public async Task<ActionResult<ToDoItemResponse>> GetDeletedTodoItemById(Guid todoItemId)
@@ -153,41 +176,12 @@ namespace ToDoList.WebAPI.Controllers
             return Ok(paginatedItems);
         }
 
-        // GET: api/todoitems/by-user
-        [HttpGet("by-user")]
-        public async Task<IActionResult> GetTodoItemsByUser()
-        {
-            // Extract user ID from the JWT token claims
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
-                return Unauthorized("Invalid or missing user ID claim.");
-
-            // Get the items by user
-            var userItems = await _todoItemsService.GetAllTodoItemsByUserAsync(userId);
-            return Ok(userItems);
-        }
+       
 
 
-        // GET: api/todoitems/admin/by-user/{userId}
-        [HttpGet("admin/by-user/{userId}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetTodoItemsByUserIdAsAdmin(Guid userId)
-        {
-            var items = await _todoItemsService.GetAllTodoItemsByUserAsync(userId);
-            return Ok(items);
-        }
+       
 
 
-        [Authorize(Roles = "Admin")]
-        // GET: api/todoitems
-        [HttpGet]
-        public async Task<ActionResult<List<UserWithTodoItemsResponse>>> GetAllGroupedByUser()
-        {
-            var result = await _todoItemsService.GetAllTodoItemsGroupedByUserAsync();
-
-            return Ok(result);
-        }
 
 
 

@@ -16,7 +16,7 @@ namespace ServiceContracts
         /// <param name="username">Username of the user</param>
         /// <param name="password">Raw password of the user</param>
         /// <returns>Returns the registered user entity</returns>
-        User RegisterUser(RegisterRequest user);
+        Task<User> RegisterUserAsync(RegisterRequest user);
 
 
         /// <summary>
@@ -25,14 +25,14 @@ namespace ServiceContracts
         /// <param name="username">Username to validate</param>
         /// <param name="password">Password to validate</param>
         /// <returns>Returns JWT token if valid, otherwise null</returns>
-        string? LoginUser(LoginRequest loginUser);
+        Task<string?> LoginUserAsync(LoginRequest loginUser);
 
         /// <summary>
         /// Returns the user object by username
         /// </summary>
         /// <param name="username">Username to look up</param>
         /// <returns>Returns the user object or null</returns>
-        User? GetUserByUsername(string username);
+        Task<User?> GetUserByUsernameAsync(string username);
     }
 }
 

@@ -6,7 +6,9 @@ using ServiceContracts;
 using Services;
 using System.Reflection;
 using System.Text;
+using ToDoList.Core.Repositories;
 using ToDoList.Infrastructure.Data;
+using ToDoList.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +16,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<IToDoItemsService, ToDoItemsService>();
+builder.Services.AddScoped<IToDoItemRepository, ToDoItemRepository>();
+
+
 builder.Services.AddScoped<IUsersService, UsersService>();
+
+builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+
+
 builder.Services.AddScoped<IJwtService, JwtService>();
+
+
+
 
 
 
