@@ -64,7 +64,7 @@ namespace ToDoList.Infrastructure.Repositories
                 RoleId = defaultRole.Id
             };
 
-            _dbContext.Users.Add(newUser);
+             _dbContext.Users.Add(newUser);
             _dbContext.SaveChangesAsync();
 
             return newUser;

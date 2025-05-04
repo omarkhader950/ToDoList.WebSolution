@@ -23,11 +23,11 @@ namespace Services
         _jwtService = jwtService;
     }
 
-    public User RegisterUserAsync(RegisterRequest user)
+    public async Task<User> RegisterUserAsync(RegisterRequest user)
     {
         
 
-        return  _repository.RegisterUserAsync(user);
+        return  await _repository.RegisterUserAsync(user);
     }
 
     public async Task<string?> LoginUserAsync(LoginRequest loginUser)
