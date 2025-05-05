@@ -10,10 +10,16 @@ using ToDoList.Core.Repositories;
 using ToDoList.Infrastructure.Data;
 using ToDoList.Infrastructure.Repositories;
 
+
 var builder = WebApplication.CreateBuilder(args);
+
+
+
 
 // Add services to the container
 builder.Services.AddControllers();
+
+
 
 builder.Services.AddScoped<IToDoItemsService, ToDoItemsService>();
 builder.Services.AddScoped<IToDoItemRepository, ToDoItemRepository>();

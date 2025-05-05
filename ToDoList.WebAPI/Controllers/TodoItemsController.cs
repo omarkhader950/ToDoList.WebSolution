@@ -90,19 +90,35 @@ namespace ToDoList.WebAPI.Controllers
 
             return Ok(result);
         }
+
+
         // PUT: api/todoitems
-        [HttpPut]
+        [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateTodoItem([FromBody] ToDoItemUpdateRequest request)
+        public async Task<IActionResult> UpdateTodoItem(Guid id, [FromBody] ToDoItemUpdateRequest request)
         {
             if (request == null) return BadRequest();
-
+            // Extract userId from the JWT token using ClaimTypes.NameIdentifier
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
-                return Unauthorized("Invalid or missing user ID claim.");
 
-            var updated = await _todoItemsService.UpdateTodoItemAsync(request, userId);
-            return Ok(updated);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID claim not found.");
+            }
+
+            var userId = Guid.Parse(userIdClaim.Value); // Parse the userId from the claim
+
+            // If the user is an admin, they can use the UserId from the request. Otherwise, fallback to the token-based userId
+            var isAdmin = User.IsInRole("Admin");
+            var actualUserId = isAdmin && request.UserId.HasValue ? request.UserId.Value : userId;
+
+            // Set the TodoItem Id from the route parameter
+            request.Id = id;
+
+            // Call the service to update the ToDoItem
+            var result = await _todoItemsService.UpdateTodoItemAsync(request, actualUserId, isAdmin);
+
+            return Ok(result);
         }
 
 
@@ -175,15 +191,6 @@ namespace ToDoList.WebAPI.Controllers
             var paginatedItems = await _todoItemsService.GetPaginatedItemsAsync(pageNumber, pageSize);
             return Ok(paginatedItems);
         }
-
-       
-
-
-       
-
-
-
-
 
     }
 }

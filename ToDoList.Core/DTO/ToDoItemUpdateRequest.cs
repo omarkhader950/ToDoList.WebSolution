@@ -16,7 +16,8 @@ namespace ServiceContracts.DTO
 
         public bool IsCompleted { get; set; }
 
-       
+
+        
 
         /// <summary>
         /// Converts the current TodoItemUpdateRequest into a TodoItem entity

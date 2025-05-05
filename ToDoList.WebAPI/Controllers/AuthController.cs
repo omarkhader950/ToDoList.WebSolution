@@ -22,7 +22,7 @@ namespace ToDoList.WebAPI.Controllers
         // POST: api/Auth/register
         [HttpPost("register")]
         [Authorize(Roles = "Admin")]
-        public   async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
             try
             {

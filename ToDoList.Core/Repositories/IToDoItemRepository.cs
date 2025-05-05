@@ -14,7 +14,7 @@ namespace ToDoList.Core.Repositories
         Task<List<TodoItem>> GetAllAsync();
         Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId);
         Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest, Guid userId);
-        Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid userId);
+        Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid actualUserId, bool isAdmin);
         Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid tokenUserId, bool isAdmin);
          Task<List<ToDoItemResponse>> GetAllDeletedItemsAsync();
         Task<ToDoItemResponse?> GetDeletedItemByIdAsync(Guid todoItemId);

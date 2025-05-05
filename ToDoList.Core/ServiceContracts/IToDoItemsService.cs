@@ -44,10 +44,10 @@ namespace ServiceContracts
         /// </summary>
         Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId);
 
-        /// <summary>
-        /// Updates the specified TodoItem based on its ID.
-        /// </summary>
-        Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid userId);
+       
+
+
+        Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid actualUserId, bool isAdmin);
 
         /// <summary>
         /// Deletes a TodoItem by its ID and UserId.

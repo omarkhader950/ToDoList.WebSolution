@@ -1,15 +1,9 @@
-﻿using Entities;
-
-
-using System;
-using ToDoList.Core.DTO;
+﻿using ToDoList.Core.DTO;
 using ServiceContracts;
-
-
-
 using ServiceContracts.DTO;
-using System;
 using ToDoList.Core.Repositories;
+
+
 
 
 namespace Services
@@ -19,11 +13,10 @@ namespace Services
 
 
         private readonly IToDoItemRepository _repository;
+       
 
 
-        //private field
-        // private readonly ApplicationDbContext _db;
-        //  private readonly IToDoItemsService _toDoItemsService;
+     
 
 
         public ToDoItemsService(IToDoItemRepository repository)
@@ -34,16 +27,7 @@ namespace Services
 
 
 
-        //public async Task<List<ToDoItemResponse>> GetAllTodoItemsAsync()
-        //{
-
-        //    return (await _db.TodoItems
-        //         .Include(t => t.User)
-        //         .ToListAsync())
-        //     .Select(todo => todo.Adapt<ToDoItemResponse>())
-        //     .ToList();
-
-        //}
+        
 
 
 
@@ -55,12 +39,11 @@ namespace Services
             return await _repository.GetTodoItemByIdAsync(todoItemId,userId); 
         }
 
-        public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid userId)
+        public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid actualUserId, bool isAdmin)
         {
-            if (todoItemUpdateRequest == null)
-                throw new ArgumentNullException(nameof(todoItemUpdateRequest));
+   
 
-            return await _repository.UpdateTodoItemAsync(todoItemUpdateRequest, userId); 
+            return await _repository.UpdateTodoItemAsync(todoItemUpdateRequest,actualUserId,isAdmin);
         }
 
         public async Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid tokenUserId, bool isAdmin)
@@ -152,5 +135,7 @@ namespace Services
         {
             throw new NotImplementedException();
         }
+
+       
     }
 }

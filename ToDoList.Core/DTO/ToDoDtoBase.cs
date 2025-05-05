@@ -19,6 +19,8 @@ namespace ServiceContracts.DTO
         [Required(ErrorMessage = "Due date is required")]
         public DateTime? DueDate { get; set; }
 
+        public Guid? UserId { get; set; }
+
 
     }
 }

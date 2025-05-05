@@ -63,17 +63,26 @@ namespace ToDoList.Infrastructure.Repositories
         }
 
       
-        public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid userId)
+        public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid actualUserId, bool isAdmin)
         {
+
+            if (todoItemUpdateRequest == null)
+                throw new ArgumentNullException(nameof(todoItemUpdateRequest));
+
+            // Admins can update any user's item; regular users only their own
             var matchingTodoItem = await _db.TodoItems
-               .FirstOrDefaultAsync(temp => temp.Id == todoItemUpdateRequest.Id && temp.UserId == userId);
+                .FirstOrDefaultAsync(temp =>
+                    temp.Id == todoItemUpdateRequest.Id &&
+                    (isAdmin || temp.UserId == actualUserId));
 
             if (matchingTodoItem == null)
-                throw new ArgumentException("Given todo item ID doesn't exist.");
+                throw new ArgumentException("Given todo item ID doesn't exist or access denied.");
 
-            matchingTodoItem.Title = todoItemUpdateRequest.Title;
+            // Update fields
+            matchingTodoItem.Title = todoItemUpdateRequest.Title!;
             matchingTodoItem.Description = todoItemUpdateRequest.Description;
             matchingTodoItem.IsCompleted = todoItemUpdateRequest.IsCompleted;
+            matchingTodoItem.DueDate = todoItemUpdateRequest.DueDate!.Value;
 
             await _db.SaveChangesAsync();
 
