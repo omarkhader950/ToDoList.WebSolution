@@ -15,20 +15,10 @@ namespace Services
         private readonly IToDoItemRepository _repository;
        
 
-
-     
-
-
         public ToDoItemsService(IToDoItemRepository repository)
         {
             _repository = repository;
         }
-
-
-
-
-        
-
 
 
         public async Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId)
@@ -105,19 +95,6 @@ namespace Services
 
         }
 
-        //public async Task<List<ToDoItemResponse>> GetPaginatedItemsForUserAsync(Guid userId, int pageNumber, int pageSize)
-        //{
-        //    return await _db.TodoItems
-        //      .Include(t => t.User)
-        //      .Where(t => t.UserId == userId && t.DeleteBy == null) // Active items only
-        //      .OrderBy(t => t.Id)
-        //      .Skip((pageNumber - 1) * pageSize)
-        //      .Take(pageSize)
-        //      .Select(t => t.Adapt<ToDoItemResponse>())
-        //      .ToListAsync();
-        //}
-
-
 
         public async Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync(Guid userId)
         {
@@ -131,10 +108,7 @@ namespace Services
             return await _repository.GetAllTodoItemsGroupedByUserAsync();
         }
 
-        public Task<List<ToDoItemResponse>> GetPaginatedItemsForUserAsync(Guid userId, int pageNumber, int pageSize)
-        {
-            throw new NotImplementedException();
-        }
+      
 
        
     }

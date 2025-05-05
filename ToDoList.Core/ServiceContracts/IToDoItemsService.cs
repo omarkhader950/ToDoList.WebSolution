@@ -16,11 +16,7 @@ namespace ServiceContracts
         Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest, Guid userId);
 
 
-        /// <summary>
-        /// Returns all TodoItems (admin or general case).
-        /// </summary>
-        /// <returns>Returns a list of TodoItemResponse objects</returns>
-       // Task<List<ToDoItemResponse>> GetAllTodoItemsAsync();
+   
 
 
         /// <summary>
@@ -33,11 +29,6 @@ namespace ServiceContracts
         /// </summary>
         Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(int pageNumber, int pageSize);
 
-
-        /// <summary>
-        /// Returns a paginated list of TodoItems for a specific user.
-        /// </summary>
-      //  Task<List<ToDoItemResponse>> GetPaginatedItemsForUserAsync(Guid userId, int pageNumber, int pageSize);
 
         /// <summary>
         /// Gets a TodoItem by ID and UserId.
