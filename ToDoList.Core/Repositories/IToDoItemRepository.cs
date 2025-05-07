@@ -21,7 +21,6 @@ namespace ToDoList.Core.Repositories
         Task<bool> RestoreTodoItemAsync(Guid todoItemId);
         Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(PaginationRequest request);
 
-       // Task<List<TodoItem>> GetPaginatedForUserAsync(Guid userId, int pageNumber, int pageSize);
         Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync(Guid userId);
 
         Task<List<TodoItem>> GetAllWithUserAsync();

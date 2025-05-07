@@ -35,19 +35,24 @@ namespace ToDoList.WebAPI.Controllers
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
                 return Unauthorized("Invalid or missing user ID claim.");
 
-            // Check if the current user is an Admin
             bool isAdmin = User.IsInRole("Admin");
 
-            // Decide which userId to assign:
             Guid finalUserId = isAdmin && request.UserId.HasValue
-                ? request.UserId.Value    // Admin provides it
-                : tokenUserId;            // Regular user gets it from token
+                ? request.UserId.Value
+                : tokenUserId;
 
-            var createdItem = await _todoItemsService.AddTodoItemAsync(request, finalUserId);
-            return CreatedAtAction(nameof(GetTodoItemById), new { todoItemId = createdItem.Id }, createdItem);
+            try
+            {
+                var createdItem = await _todoItemsService.AddTodoItemAsync(request, finalUserId);
+                return CreatedAtAction(nameof(GetTodoItemById), new { todoItemId = createdItem.Id }, createdItem);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-     
+
 
         // GET: api/todoitems/{todoItemId}
         [HttpGet("{todoItemId}")]

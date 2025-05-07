@@ -2,6 +2,19 @@
 
 namespace Entities
 {
+
+
+
+    public enum TodoStatus
+    {
+        Pending = 0,
+        InProgress = 1,
+        Completed = 2,
+        Cancelled = 3
+    }
+
+
+
     public class TodoItem
     {
         [Key]
@@ -17,8 +30,7 @@ namespace Entities
 
         public DateTime DueDate { get; set; }
 
-        // New field for soft delete
-     //   public bool IsDeleted { get; set; } = false;
+   
 
         // Foreign key to the User entity (one-to-many relationship)
         public Guid UserId { get; set; }
@@ -35,6 +47,10 @@ namespace Entities
 
         //delete by
         public Guid? DeleteBy {  get; set; }
+
+
+        // Status using the enum
+        public TodoStatus Status { get; set; } = TodoStatus.Pending;
 
     }
 }

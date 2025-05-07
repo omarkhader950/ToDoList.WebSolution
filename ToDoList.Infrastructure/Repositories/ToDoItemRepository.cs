@@ -50,8 +50,21 @@ namespace ToDoList.Infrastructure.Repositories
         {
 
 
+            if (todoItemAddRequest == null)
+                throw new ArgumentNullException(nameof(todoItemAddRequest));
+
+            // Count active items (Pending or InProgress)
+            var activeItemCount = await _db.TodoItems
+                .CountAsync(t => t.UserId == userId &&
+                                 (t.Status == TodoStatus.Pending || t.Status == TodoStatus.InProgress));
+
+            if (activeItemCount >= 10)
+                throw new InvalidOperationException("User already has 10 active ToDo items (Pending or InProgress).");
+
+            // Map and prepare item
             var todoItem = todoItemAddRequest.Adapt<TodoItem>();
             todoItem.UserId = userId;
+            todoItem.CreationDate = DateTime.UtcNow;
 
             await _db.TodoItems.AddAsync(todoItem);
             await _db.SaveChangesAsync();
@@ -181,16 +194,7 @@ namespace ToDoList.Infrastructure.Repositories
             return result;
         }
 
-        public async Task<List<TodoItem>> GetPaginatedForUserAsync(Guid userId, int pageNumber, int pageSize)
-        {
-            return await _db.TodoItems
-                            .Include(t => t.User)
-                            .Where(t => t.UserId == userId && t.DeleteBy == null)
-                            .OrderBy(t => t.Id)
-                            .Skip((pageNumber - 1) * pageSize)
-                            .Take(pageSize)
-                            .ToListAsync();
-        }
+      
 
 
         
