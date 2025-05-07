@@ -19,7 +19,7 @@ namespace ToDoList.Core.Repositories
          Task<List<ToDoItemResponse>> GetAllDeletedItemsAsync();
         Task<ToDoItemResponse?> GetDeletedItemByIdAsync(Guid todoItemId);
         Task<bool> RestoreTodoItemAsync(Guid todoItemId);
-        Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(int pageNumber, int pageSize);
+        Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(PaginationRequest request);
 
        // Task<List<TodoItem>> GetPaginatedForUserAsync(Guid userId, int pageNumber, int pageSize);
         Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync(Guid userId);

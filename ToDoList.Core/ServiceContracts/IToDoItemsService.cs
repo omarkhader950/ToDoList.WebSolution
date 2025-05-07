@@ -27,7 +27,7 @@ namespace ServiceContracts
         /// <summary>
         /// Returns a paginated list of TodoItems.
         /// </summary>
-        Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(int pageNumber, int pageSize);
+        Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(PaginationRequest request);
 
 
         /// <summary>

@@ -89,9 +89,9 @@ namespace Services
 
 
        
-        public async Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(int pageNumber, int pageSize)
+        public async Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(PaginationRequest request)
         {
-            return await _repository.GetPaginatedItemsAsync(pageNumber,pageSize);
+            return await _repository.GetPaginatedItemsAsync(request);
 
         }
 

@@ -183,12 +183,12 @@ namespace ToDoList.WebAPI.Controllers
        
         // GET: api/todoitems/paginated
         [HttpGet("paginated")]
-        public async Task<IActionResult> GetPaginatedTodoItems([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 3)
+        public async Task<IActionResult> GetPaginatedTodoItems([FromQuery] PaginationRequest request)
         {
-            if (pageNumber <= 0 || pageSize <= 0)
+            if (request.PageNumber <= 0 || request.PageSize <= 0)
                 return BadRequest("Page number and page size must be greater than 0.");
 
-            var paginatedItems = await _todoItemsService.GetPaginatedItemsAsync(pageNumber, pageSize);
+            var paginatedItems = await _todoItemsService.GetPaginatedItemsAsync(request);
             return Ok(paginatedItems);
         }
 

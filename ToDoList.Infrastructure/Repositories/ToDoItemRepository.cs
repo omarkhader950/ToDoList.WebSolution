@@ -154,15 +154,31 @@ namespace ToDoList.Infrastructure.Repositories
         }
 
         
-        public async Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(int pageNumber, int pageSize)
+        public async Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(PaginationRequest request)
         {
-             return await _db.TodoItems
-               .Include(t => t.User)
-               .OrderBy(t => t.Id)
-               .Skip((pageNumber - 1) * pageSize)
-               .Take(pageSize)
-               .Select(t => t.Adapt<ToDoItemResponse>())
-               .ToListAsync();
+            var query = _db.TodoItems
+                .Include(t => t.User)
+                .AsQueryable();
+
+            // Apply filters on CreationDate only if values are provided
+            if (request.CreatedAfter.HasValue)
+            {
+                query = query.Where(t => t.CreationDate >= request.CreatedAfter.Value);
+            }
+
+            if (request.CreatedBefore.HasValue)
+            {
+                query = query.Where(t => t.CreationDate <= request.CreatedBefore.Value);
+            }
+
+            var result = await query
+                .OrderBy(t => t.Id)
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(t => t.Adapt<ToDoItemResponse>())
+                .ToListAsync();
+
+            return result;
         }
 
         public async Task<List<TodoItem>> GetPaginatedForUserAsync(Guid userId, int pageNumber, int pageSize)
