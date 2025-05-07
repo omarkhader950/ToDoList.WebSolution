@@ -28,6 +28,10 @@ namespace ToDoList.Core.Repositories
         Task<List<UserWithTodoItemsResponse>> GetAllTodoItemsGroupedByUserAsync();
 
 
+        Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin);
+
+        Task MarkAsCompletedAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin);
+
 
     }
 }

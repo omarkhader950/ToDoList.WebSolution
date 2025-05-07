@@ -2,6 +2,7 @@
 using ServiceContracts;
 using ServiceContracts.DTO;
 using ToDoList.Core.Repositories;
+using Entities;
 
 
 
@@ -108,8 +109,26 @@ namespace Services
             return await _repository.GetAllTodoItemsGroupedByUserAsync();
         }
 
-      
+        public async Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
+        {
 
-       
+
+           await _repository.MarkAsInProgressAsync(itemIds, currentUserId, isAdmin);
+
+           
+        }
+
+        public async Task MarkAsCompletedAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
+        {
+
+
+            await _repository.MarkAsCompletedAsync(itemIds, currentUserId, isAdmin);
+
+
+        }
+
+
+
+
     }
 }

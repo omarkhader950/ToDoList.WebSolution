@@ -197,5 +197,67 @@ namespace ToDoList.WebAPI.Controllers
             return Ok(paginatedItems);
         }
 
+
+        [HttpPut("status/in-progress")]
+        public async Task<IActionResult> SetItemsToInProgress([FromBody] UpdateTodoStatusRequest request)
+        {
+            if (request == null || request.TodoItemIds == null || !request.TodoItemIds.Any())
+                return BadRequest("No IDs provided.");
+
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
+                return Unauthorized("Invalid or missing user ID claim.");
+
+            bool isAdmin = User.IsInRole("Admin");
+
+            try
+            {
+                await _todoItemsService.MarkAsInProgressAsync(request.TodoItemIds, tokenUserId, isAdmin);
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
+
+        [HttpPut("status/in-completed")]
+        public async Task<IActionResult> SetItemsToCompleted([FromBody] UpdateTodoStatusRequest request)
+        {
+            if (request == null || request.TodoItemIds == null || !request.TodoItemIds.Any())
+                return BadRequest("No IDs provided.");
+
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
+                return Unauthorized("Invalid or missing user ID claim.");
+
+            bool isAdmin = User.IsInRole("Admin");
+
+            try
+            {
+                await _todoItemsService.MarkAsCompletedAsync(request.TodoItemIds, tokenUserId, isAdmin);
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
+
+
+
+
     }
 }

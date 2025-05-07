@@ -71,8 +71,6 @@ namespace ToDoList.Infrastructure.Repositories
 
             return todoItem.Adapt<ToDoItemResponse>();
 
-
-           
         }
 
       
@@ -242,7 +240,46 @@ namespace ToDoList.Infrastructure.Repositories
 
         }
 
+        public async Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
+        {
 
+            var items = await _db.TodoItems
+        .Where(t => itemIds.Contains(t.Id))
+        .ToListAsync();
 
+            if (!isAdmin)
+            {
+                // Regular users can only update their own items
+                if (items.Any(t => t.UserId != currentUserId))
+                    throw new UnauthorizedAccessException("You can only modify your own to-do items.");
+            }
+
+            foreach (var item in items)
+            {
+                item.Status = TodoStatus.InProgress;
+            }
+
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task MarkAsCompletedAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
+        {
+            var items = await _db.TodoItems
+        .Where(t => itemIds.Contains(t.Id))
+        .ToListAsync();
+
+            if (!isAdmin)
+            {
+                if (items.Any(t => t.UserId != currentUserId))
+                    throw new UnauthorizedAccessException("You can only modify your own to-do items.");
+            }
+
+            foreach (var item in items)
+            {
+                item.Status = TodoStatus.Completed;
+            }
+
+            await _db.SaveChangesAsync();
+        }
     }
 }
