@@ -29,16 +29,18 @@ namespace ToDoList.WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> AddTodoItem([FromBody] List<TodoItemAddRequest> requestList)
         {
+            if (requestList == null) return BadRequest();
+
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
+                return Unauthorized("Invalid or missing user ID claim.");
+
+            bool isAdmin = User.IsInRole("Admin");
+            var createdItems = new List<ToDoItemResponse>();
+
             foreach (var request in requestList)
             {
-                if (request == null) return BadRequest();
-
-                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
-                    return Unauthorized("Invalid or missing user ID claim.");
-
-                bool isAdmin = User.IsInRole("Admin");
-
+                
                 Guid finalUserId = isAdmin && request.UserId.HasValue
                     ? request.UserId.Value
                     : tokenUserId;
@@ -46,7 +48,7 @@ namespace ToDoList.WebAPI.Controllers
                 try
                 {
                     var createdItem = await _todoItemsService.AddTodoItemAsync(request, finalUserId);
-                    return CreatedAtAction(nameof(GetTodoItemById), new { todoItemId = createdItem.Id }, createdItem);
+                    createdItems.Add(createdItem);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -54,7 +56,7 @@ namespace ToDoList.WebAPI.Controllers
                 }
                 
             }
-            return Ok();
+            return Created("", createdItems); 
         }
 
 

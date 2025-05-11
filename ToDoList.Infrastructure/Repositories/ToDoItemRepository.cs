@@ -53,13 +53,13 @@ namespace ToDoList.Infrastructure.Repositories
             if (todoItemAddRequest == null)
                 throw new ArgumentNullException(nameof(todoItemAddRequest));
 
-            // Count active items (Pending or InProgress)
+            // Count active items (New or InProgress)
             var activeItemCount = await _db.TodoItems
                 .CountAsync(t => t.UserId == userId &&
-                                 (t.Status == TodoStatus.Pending || t.Status == TodoStatus.InProgress));
+                                 (t.Status == TodoStatus.New || t.Status == TodoStatus.InProgress));
 
             if (activeItemCount >= 10)
-                throw new InvalidOperationException("User already has 10 active ToDo items (Pending or InProgress).");
+                throw new InvalidOperationException("User already has 10 active ToDo items (New or InProgress).");
 
             // Map and prepare item
             var todoItem = todoItemAddRequest.Adapt<TodoItem>();

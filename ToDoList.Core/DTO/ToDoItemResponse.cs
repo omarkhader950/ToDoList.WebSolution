@@ -20,7 +20,7 @@ namespace ToDoList.Core.DTO
 
         public string UserName { get; set; }
 
-        public TodoStatus Status { get; set; } = TodoStatus.Pending;
+        public TodoStatus Status { get; set; } = TodoStatus.New;
 
 
 

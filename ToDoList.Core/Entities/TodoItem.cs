@@ -7,7 +7,7 @@ namespace Entities
 
     public enum TodoStatus
     {
-        Pending = 0,
+        New = 0,
         InProgress = 1,
         Completed = 2,
         Cancelled = 3
@@ -50,7 +50,7 @@ namespace Entities
 
 
         // Status using the enum
-        public TodoStatus Status { get; set; } = TodoStatus.Pending;
+        public TodoStatus Status { get; set; } = TodoStatus.New;
 
     }
 }
