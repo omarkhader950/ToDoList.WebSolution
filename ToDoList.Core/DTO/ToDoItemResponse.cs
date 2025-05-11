@@ -16,10 +16,12 @@ namespace ToDoList.Core.DTO
         public Guid Id { get; set; }
 
 
-        public bool IsCompleted { get; set; }
+        //public bool IsCompleted { get; set; }
 
         public string UserName { get; set; }
 
+        public TodoStatus Status { get; set; } = TodoStatus.Pending;
+
 
 
 
@@ -27,6 +29,6 @@ namespace ToDoList.Core.DTO
 
 
 
-    
-    }
+
+}
 

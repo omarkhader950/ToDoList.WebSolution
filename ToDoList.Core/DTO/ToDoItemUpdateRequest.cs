@@ -19,15 +19,7 @@ namespace ServiceContracts.DTO
 
         
 
-        /// <summary>
-        /// Converts the current TodoItemUpdateRequest into a TodoItem entity
-        /// </summary>
-        //public TodoItem ToTodoItem()
-        //{
-        //    var todoItem = this.Adapt<TodoItem>();  
-        //    todoItem.IsCompleted = false; // Set defaults if needed
-        //    return todoItem;
-        //}
+   
 
 
     }

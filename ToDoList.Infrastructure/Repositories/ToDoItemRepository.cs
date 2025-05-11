@@ -229,14 +229,14 @@ namespace ToDoList.Infrastructure.Repositories
                         Id = t.Id,
                         Title = t.Title,
                         Description = t.Description,
-                        IsCompleted = t.IsCompleted,
+                        Status = t.Status
+                        ,
+
+
                         DueDate = t.DueDate
                     }).ToList()
                 })
                 .ToList();
-
-
-
 
         }
 

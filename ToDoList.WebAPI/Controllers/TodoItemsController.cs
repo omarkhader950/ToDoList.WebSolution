@@ -27,29 +27,34 @@ namespace ToDoList.WebAPI.Controllers
         // admin and user in the same end point 
         // POST: api/todoitems
         [HttpPost]
-        public async Task<IActionResult> AddTodoItem([FromBody] TodoItemAddRequest request)
+        public async Task<IActionResult> AddTodoItem([FromBody] List<TodoItemAddRequest> requestList)
         {
-            if (request == null) return BadRequest();
-
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
-                return Unauthorized("Invalid or missing user ID claim.");
-
-            bool isAdmin = User.IsInRole("Admin");
-
-            Guid finalUserId = isAdmin && request.UserId.HasValue
-                ? request.UserId.Value
-                : tokenUserId;
-
-            try
+            foreach (var request in requestList)
             {
-                var createdItem = await _todoItemsService.AddTodoItemAsync(request, finalUserId);
-                return CreatedAtAction(nameof(GetTodoItemById), new { todoItemId = createdItem.Id }, createdItem);
+                if (request == null) return BadRequest();
+
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
+                    return Unauthorized("Invalid or missing user ID claim.");
+
+                bool isAdmin = User.IsInRole("Admin");
+
+                Guid finalUserId = isAdmin && request.UserId.HasValue
+                    ? request.UserId.Value
+                    : tokenUserId;
+
+                try
+                {
+                    var createdItem = await _todoItemsService.AddTodoItemAsync(request, finalUserId);
+                    return CreatedAtAction(nameof(GetTodoItemById), new { todoItemId = createdItem.Id }, createdItem);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return BadRequest(new { message = ex.Message });
+                }
+                
             }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok();
         }
 
 
