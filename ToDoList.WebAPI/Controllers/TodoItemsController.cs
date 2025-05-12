@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Services;
 using ToDoList.Core.DTO;
+using Entities;
+using Mapster;
 
 namespace ToDoList.WebAPI.Controllers
 {
@@ -32,32 +34,29 @@ namespace ToDoList.WebAPI.Controllers
             if (requestList == null) return BadRequest();
 
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
-                return Unauthorized("Invalid or missing user ID claim.");
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var tokenUserId))
+                return Unauthorized("Invalid user.");
 
             bool isAdmin = User.IsInRole("Admin");
-            var createdItems = new List<ToDoItemResponse>();
 
-            foreach (var request in requestList)
+            
+            var domainModels = requestList.Select(request =>
             {
-                
-                Guid finalUserId = isAdmin && request.UserId.HasValue
-                    ? request.UserId.Value
-                    : tokenUserId;
+                var entity = request.Adapt<TodoItem>();
+                entity.UserId = isAdmin && request.UserId.HasValue ? request.UserId.Value : tokenUserId;
+                entity.CreationDate = DateTime.UtcNow;
+                return entity;
+            }).ToList();
 
-                try
-                {
-                    var createdItem = await _todoItemsService.AddTodoItemAsync(request, finalUserId);
-                    createdItems.Add(createdItem);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    return BadRequest(new { message = ex.Message });
-                }
-                
-            }
-            return Created("", createdItems); 
+            
+            var createdEntities = await _todoItemsService.AddTodoItemsAsync(domainModels);
+
+            //  Convert domain models to response DTOs
+            var response = createdEntities.Adapt<List<ToDoItemResponse>>();
+
+            return Created("", response);
         }
+
 
 
 

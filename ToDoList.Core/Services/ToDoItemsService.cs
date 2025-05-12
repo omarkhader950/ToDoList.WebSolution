@@ -6,7 +6,6 @@ using Entities;
 
 
 
-
 namespace Services
 {
     public class ToDoItemsService : IToDoItemsService
@@ -14,11 +13,13 @@ namespace Services
 
 
         private readonly IToDoItemRepository _repository;
-       
+        private readonly IMappingService _mapper;
 
-        public ToDoItemsService(IToDoItemRepository repository)
+
+        public ToDoItemsService(IToDoItemRepository repository, IMappingService mapper)
         {
             _repository = repository;
+            _mapper = mapper;
         }
 
 
@@ -44,10 +45,22 @@ namespace Services
 
 
 
-        public async Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest, Guid userId)
+        public async Task<List<TodoItem>> AddTodoItemsAsync(List<TodoItem> items)
         {
+            var result = new List<TodoItem>();
 
-            return  await _repository.AddTodoItemAsync(todoItemAddRequest, userId); 
+            foreach (var item in items)
+            {
+                int activeCount = await _repository.CountActiveAsync(item.UserId);
+                if (activeCount >= 10)
+                    throw new InvalidOperationException("User already has 10 active ToDo items.");
+
+                await _repository.AddAsync(item);
+                result.Add(item);
+            }
+
+            await _repository.SaveChangesAsync();
+            return result;
         }
 
 

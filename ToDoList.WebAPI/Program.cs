@@ -8,7 +8,9 @@ using System.Reflection;
 using System.Text;
 using ToDoList.Core.Repositories;
 using ToDoList.Infrastructure.Data;
+using ToDoList.Infrastructure.Mapping;
 using ToDoList.Infrastructure.Repositories;
+using ToDoList.Infrastructure.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +26,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IToDoItemsService, ToDoItemsService>();
 builder.Services.AddScoped<IToDoItemRepository, ToDoItemRepository>();
 
+builder.Services.AddScoped<IMappingService, MappingService>();
 
 builder.Services.AddScoped<IUsersService, UsersService>();
 

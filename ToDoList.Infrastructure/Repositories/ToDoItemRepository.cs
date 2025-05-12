@@ -281,5 +281,22 @@ namespace ToDoList.Infrastructure.Repositories
 
             await _db.SaveChangesAsync();
         }
+
+        public async Task<int> CountActiveAsync(Guid userId)
+        {
+            return await _db.TodoItems
+            .CountAsync(t => t.UserId == userId &&
+                             (t.Status == TodoStatus.New || t.Status == TodoStatus.InProgress));
+        }
+
+        public async Task AddAsync(TodoItem item)
+        {
+            await _db.TodoItems.AddAsync(item);
+        }
+
+        public Task SaveChangesAsync()
+        {
+            return _db.SaveChangesAsync();
+        }
     }
 }

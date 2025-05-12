@@ -11,8 +11,8 @@ namespace ToDoList.Core.Repositories
 {
     public interface IToDoItemRepository
     {
-        Task<List<TodoItem>> GetAllAsync();
-        Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId);
+       // Task<List<TodoItem>> GetAllAsync();
+       // Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId);
         Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest, Guid userId);
         Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid actualUserId, bool isAdmin);
         Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid tokenUserId, bool isAdmin);
@@ -31,6 +31,12 @@ namespace ToDoList.Core.Repositories
         Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin);
 
         Task MarkAsCompletedAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin);
+
+
+
+        Task<int> CountActiveAsync(Guid userId);
+        Task AddAsync(TodoItem item);
+        Task SaveChangesAsync();
 
 
     }
