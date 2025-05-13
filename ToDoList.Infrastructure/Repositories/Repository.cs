@@ -51,10 +51,7 @@ namespace ToDoList.Infrastructure.Repositories
             return query.ToList();
         }
 
-        public Task<IEnumerable<T>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
+       
 
         public async Task<T?> GetByIdAsync(Guid id)
         {
