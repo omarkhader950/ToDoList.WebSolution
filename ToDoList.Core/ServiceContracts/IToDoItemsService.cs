@@ -8,13 +8,12 @@ namespace ServiceContracts
 {
     public interface IToDoItemsService
     {
-        /// <summary>
-        /// Adds a new task to the list of TodoItems.
-        /// </summary>
-        /// <param name="todoItemAddRequest">Task to add</param>
-        /// <returns>Returns the task details along with the newly generated ID</returns>
+        
 
-        Task<List<ToDoItemResponse>> AddTodoItemsAsync(List<TodoItem> items);
+        Task<List<ToDoItemResponse>> AddTodoItemsAsync(
+     List<TodoItemAddRequest> requestList,
+     Guid tokenUserId,
+     bool isAdmin);
 
 
 

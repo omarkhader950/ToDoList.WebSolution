@@ -10,7 +10,7 @@ using ToDoList.Infrastructure.Mapping;
 
 namespace Services
 {
-    public class ToDoItemsService : IToDoItemsService
+    public class ToDoItemsService : IToDoItemsService 
     {
 
 
@@ -30,7 +30,13 @@ namespace Services
             if (todoItemId == null)
                 return null;
 
-            return await _repository.GetTodoItemByIdAsync(todoItemId,userId); 
+
+
+            var result = await _repository.GetTodoItemByIdAsync(todoItemId,userId);
+
+          return  _mapper.Map<TodoItem, ToDoItemResponse>(result);
+
+            
         }
 
         public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid actualUserId, bool isAdmin)
@@ -47,11 +53,24 @@ namespace Services
 
 
 
-        public async Task<List<TodoItem>> AddTodoItemsAsync(List<TodoItem> items)
+        public async Task<List<ToDoItemResponse>> AddTodoItemsAsync(
+     List<TodoItemAddRequest> requestList,
+     Guid tokenUserId,
+     bool isAdmin)
         {
+            var entities = requestList.Select(request =>
+            {
+                var entity = _mapper.Map<TodoItemAddRequest, TodoItem>(request);
+                entity.UserId = isAdmin && request.UserId.HasValue
+                    ? request.UserId.Value
+                    : tokenUserId;
+                entity.CreationDate = DateTime.UtcNow;
+                return entity;
+            }).ToList();
+
             var result = new List<TodoItem>();
 
-            foreach (var item in items)
+            foreach (var item in entities)
             {
                 int activeCount = await _repository.CountActiveAsync(item.UserId);
                 if (activeCount >= 10)
@@ -62,8 +81,10 @@ namespace Services
             }
 
             await _repository.SaveChangesAsync();
-            return result;
+
+            return _mapper.MapList<TodoItem, ToDoItemResponse>(result);
         }
+
 
 
         /// <summary>
@@ -114,14 +135,32 @@ namespace Services
 
         public async Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync(Guid userId)
         {
-            return await _repository.GetAllTodoItemsByUserAsync(userId);
+
+            List<TodoItem> result = await _repository.GetAllTodoItemsByUserAsync(userId);
+            return  _mapper.MapList<TodoItem, ToDoItemResponse>(result);
+
         }
 
 
-
+        //maybe causes error _mapper.Map<TodoItem, ToDoItemResponse>(t)
         public async Task<List<UserWithTodoItemsResponse>> GetAllTodoItemsGroupedByUserAsync()
         {
-            return await _repository.GetAllTodoItemsGroupedByUserAsync();
+
+            var items = await _repository.GetAllWithUserAsync();
+
+            return items
+                .GroupBy(t => new { t.User.Id, t.User.Username })
+                .Select(g => new UserWithTodoItemsResponse
+                {
+                    UserId = g.Key.Id,
+                    UserName = g.Key.Username,
+                    TodoItems = g.Select(t => _mapper.Map<TodoItem, ToDoItemResponse>(t)).ToList()
+                })
+                .ToList();
+
+
+
+           
         }
 
         public async Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)

@@ -31,7 +31,8 @@ namespace ToDoList.WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> AddTodoItem([FromBody] List<TodoItemAddRequest> requestList)
         {
-            if (requestList == null) return BadRequest();
+            if (requestList == null || requestList.Count == 0)
+                return BadRequest();
 
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var tokenUserId))
@@ -39,23 +40,11 @@ namespace ToDoList.WebAPI.Controllers
 
             bool isAdmin = User.IsInRole("Admin");
 
-            
-            var domainModels = requestList.Select(request =>
-            {
-                var entity = request.Adapt<TodoItem>();
-                entity.UserId = isAdmin && request.UserId.HasValue ? request.UserId.Value : tokenUserId;
-                entity.CreationDate = DateTime.UtcNow;
-                return entity;
-            }).ToList();
+            var createdResponses = await _todoItemsService.AddTodoItemsAsync(requestList, tokenUserId, isAdmin);
 
-            
-            var createdEntities = await _todoItemsService.AddTodoItemsAsync(domainModels);
-
-            //  Convert domain models to response DTOs
-            var response = createdEntities.Adapt<List<ToDoItemResponse>>();
-
-            return Created("", response);
+            return Created("", createdResponses);
         }
+
 
 
 

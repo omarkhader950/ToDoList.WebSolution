@@ -9,11 +9,10 @@ using ToDoList.Core.DTO;
 
 namespace ToDoList.Core.Repositories
 {
-    public interface IToDoItemRepository
+    public interface IToDoItemRepository : IRepository<TodoItem>
     {
-       // Task<List<TodoItem>> GetAllAsync();
-       // Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId);
-        Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest, Guid userId);
+        
+        Task<TodoItem?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId);
         Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid actualUserId, bool isAdmin);
         Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid tokenUserId, bool isAdmin);
          Task<List<ToDoItemResponse>> GetAllDeletedItemsAsync();
@@ -21,11 +20,11 @@ namespace ToDoList.Core.Repositories
         Task<bool> RestoreTodoItemAsync(Guid todoItemId);
         Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(PaginationRequest request);
 
-        Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync(Guid userId);
+        Task<List<TodoItem>> GetAllTodoItemsByUserAsync(Guid userId);
 
         Task<List<TodoItem>> GetAllWithUserAsync();
 
-        Task<List<UserWithTodoItemsResponse>> GetAllTodoItemsGroupedByUserAsync();
+        
 
 
         Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin);
@@ -35,8 +34,7 @@ namespace ToDoList.Core.Repositories
 
 
         Task<int> CountActiveAsync(Guid userId);
-        Task AddAsync(TodoItem item);
-        Task SaveChangesAsync();
+        
 
 
     }

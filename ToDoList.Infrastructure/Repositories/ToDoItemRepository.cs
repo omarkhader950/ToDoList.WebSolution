@@ -13,65 +13,39 @@ using ToDoList.Infrastructure.Data;
 
 namespace ToDoList.Infrastructure.Repositories
 {
-    public class ToDoItemRepository : IToDoItemRepository
+    public class ToDoItemRepository : Repository<TodoItem> ,IToDoItemRepository 
     {
         private readonly ApplicationDbContext _db;
 
-        public ToDoItemRepository(ApplicationDbContext db)
+        public ToDoItemRepository(ApplicationDbContext db) : base(db) 
         {
             _db = db;
         }
 
-        public async Task<List<TodoItem>> GetAllAsync()
-        {
-            return await _db.TodoItems.Include(t => t.User).ToListAsync();
-        }
+  
 
 
         
 
-        public async Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId)
+        public async Task<TodoItem?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId)
         {
             if (todoItemId == null)
                 return null;
 
-            var todoItem = await _db.TodoItems
+            TodoItem? todoItem = await _db.TodoItems
                 .Include(t => t.User)
                 .FirstOrDefaultAsync(temp => temp.Id == todoItemId && temp.UserId == userId);
 
-            return todoItem == null ? null : todoItem.Adapt<ToDoItemResponse>();
+            return todoItem == null ? null : todoItem;
+
+                
         }
 
 
 
 
         
-        public async Task<ToDoItemResponse> AddTodoItemAsync(TodoItemAddRequest? todoItemAddRequest, Guid userId)
-        {
-
-
-            if (todoItemAddRequest == null)
-                throw new ArgumentNullException(nameof(todoItemAddRequest));
-
-            // Count active items (New or InProgress)
-            var activeItemCount = await _db.TodoItems
-                .CountAsync(t => t.UserId == userId &&
-                                 (t.Status == TodoStatus.New || t.Status == TodoStatus.InProgress));
-
-            if (activeItemCount >= 10)
-                throw new InvalidOperationException("User already has 10 active ToDo items (New or InProgress).");
-
-            // Map and prepare item
-            var todoItem = todoItemAddRequest.Adapt<TodoItem>();
-            todoItem.UserId = userId;
-            todoItem.CreationDate = DateTime.UtcNow;
-
-            await _db.TodoItems.AddAsync(todoItem);
-            await _db.SaveChangesAsync();
-
-            return todoItem.Adapt<ToDoItemResponse>();
-
-        }
+       
 
       
         public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid actualUserId, bool isAdmin)
@@ -196,49 +170,21 @@ namespace ToDoList.Infrastructure.Repositories
 
 
         
-        public async Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync(Guid userId)
+        public async Task<List<TodoItem>> GetAllTodoItemsByUserAsync(Guid userId)
         {
             return await _db.TodoItems
          .Include(t => t.User)
-         .Where(t => t.UserId == userId && t.DeleteBy == null)
-         .Select(t => t.Adapt<ToDoItemResponse>())
-         .ToListAsync();
+         .Where(t => t.UserId == userId && t.DeleteBy == null).ToListAsync();
+         
         }
+
+
 
         public async Task<List<TodoItem>> GetAllWithUserAsync()
         {
             return await _db.TodoItems.Include(t => t.User).ToListAsync();
         }
 
-
-
-        public async Task<List<UserWithTodoItemsResponse>> GetAllTodoItemsGroupedByUserAsync()
-        {
-            var items = await _db.TodoItems
-              .Include(t => t.User)
-              .ToListAsync();
-
-            return items
-                .GroupBy(t => new { t.User.Id, t.User.Username })
-                .Select(g => new UserWithTodoItemsResponse
-                {
-                    UserId = g.Key.Id,
-                    UserName = g.Key.Username,
-                    TodoItems = g.Select(t => new ToDoItemResponse
-                    {
-                        Id = t.Id,
-                        Title = t.Title,
-                        Description = t.Description,
-                        Status = t.Status
-                        ,
-
-
-                        DueDate = t.DueDate
-                    }).ToList()
-                })
-                .ToList();
-
-        }
 
         public async Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
         {
@@ -289,14 +235,6 @@ namespace ToDoList.Infrastructure.Repositories
                              (t.Status == TodoStatus.New || t.Status == TodoStatus.InProgress));
         }
 
-        public async Task AddAsync(TodoItem item)
-        {
-            await _db.TodoItems.AddAsync(item);
-        }
-
-        public Task SaveChangesAsync()
-        {
-            return _db.SaveChangesAsync();
-        }
+      
     }
 }
