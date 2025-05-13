@@ -1,17 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using ToDoList.Core.Enums;
 
 namespace Entities
 {
 
 
 
-    public enum TodoStatus
-    {
-        New = 0,
-        InProgress = 1,
-        Completed = 2,
-        Cancelled = 3
-    }
 
 
 

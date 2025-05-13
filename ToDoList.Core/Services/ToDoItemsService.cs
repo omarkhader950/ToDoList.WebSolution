@@ -4,6 +4,7 @@ using ServiceContracts.DTO;
 using ToDoList.Core.Repositories;
 using Entities;
 using ToDoList.Infrastructure.Mapping;
+using ToDoList.Core.Enums;
 
 
 
@@ -34,20 +35,39 @@ namespace Services
 
             var result = await _repository.GetTodoItemByIdAsync(todoItemId,userId);
 
-          return  _mapper.Map<TodoItem, ToDoItemResponse>(result);
+          return   _mapper.Map<TodoItem, ToDoItemResponse>(result);
 
             
         }
 
-        public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid actualUserId, bool isAdmin)
+        public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? request, Guid actualUserId, bool isAdmin)
         {
-   
 
-            return await _repository.UpdateTodoItemAsync(todoItemUpdateRequest,actualUserId,isAdmin);
+            if (request == null) throw new ArgumentNullException(nameof(request));
+
+            var item = await _repository.GetByIdAsync(request.Id);
+
+            if (item == null || (!isAdmin && item.UserId != actualUserId))
+                throw new ArgumentException("Given todo item ID doesn't exist or access denied.");
+
+            item.Title = request.Title!;
+            item.Description = request.Description;
+            item.IsCompleted = request.IsCompleted;
+            item.DueDate = request.DueDate!.Value;
+
+            await _repository.SaveChangesAsync();
+            return _mapper.Map<TodoItem, ToDoItemResponse>(item);
+             
         }
 
+
+  
         public async Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid tokenUserId, bool isAdmin)
         {
+            if (todoItemId == Guid.Empty)
+                throw new ArgumentException("Todo item ID is required.", nameof(todoItemId));
+
+
             return await _repository.DeleteTodoItemAsync(todoItemId, tokenUserId, isAdmin);
         }
 
@@ -93,7 +113,11 @@ namespace Services
         /// <returns>List of deleted todo items mapped to response models.</returns>
         public async Task<List<ToDoItemResponse>> GetAllDeletedItemsAsync()
         {
-            return await _repository.GetAllDeletedItemsAsync();
+
+
+            List<TodoItem> todoItems =  await _repository.GetAllDeletedItemsAsync();
+
+            return _mapper.MapList<TodoItem, ToDoItemResponse>(todoItems);
 
 
         }
@@ -120,7 +144,15 @@ namespace Services
         {
            
 
-            return await _repository.GetDeletedItemByIdAsync(todoItemId);
+
+
+            TodoItem? todoItem =  await _repository.GetDeletedItemByIdAsync(todoItemId);
+
+            if (todoItem == null) return null;
+
+
+            return _mapper.Map<TodoItem, ToDoItemResponse>(todoItem);
+
         }
 
 
@@ -128,7 +160,10 @@ namespace Services
        
         public async Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(PaginationRequest request)
         {
-            return await _repository.GetPaginatedItemsAsync(request);
+ 
+            
+            List<TodoItem> todoItems =  await _repository.GetPaginatedItemsAsync(request);
+            return _mapper.MapList<TodoItem, ToDoItemResponse>(todoItems);
 
         }
 
@@ -142,7 +177,7 @@ namespace Services
         }
 
 
-        //maybe causes error _mapper.Map<TodoItem, ToDoItemResponse>(t)
+     
         public async Task<List<UserWithTodoItemsResponse>> GetAllTodoItemsGroupedByUserAsync()
         {
 
@@ -165,20 +200,36 @@ namespace Services
 
         public async Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
         {
+            var items = await _repository.GetItemsByIdsAsync(itemIds);
 
+            if (!isAdmin)
+            {
+                if (items.Any(t => t.UserId != currentUserId))
+                    throw new UnauthorizedAccessException("You can only modify your own to-do items.");
+            }
 
-           await _repository.MarkAsInProgressAsync(itemIds, currentUserId, isAdmin);
+            foreach (var item in items)
+            {
+                item.Status = TodoStatus.InProgress;
+            }
 
-           
+            await _repository.SaveChangesAsync(); 
         }
+
 
         public async Task MarkAsCompletedAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
         {
+            var items = await _repository.GetItemsByIdsAsync(itemIds);
 
+            if (!isAdmin && items.Any(t => t.UserId != currentUserId))
+                throw new UnauthorizedAccessException("You can only modify your own to-do items.");
 
-            await _repository.MarkAsCompletedAsync(itemIds, currentUserId, isAdmin);
+            foreach (var item in items)
+            {
+                item.Status = TodoStatus.Completed;
+            }
 
-
+            await _repository.SaveChangesAsync();
         }
 
 

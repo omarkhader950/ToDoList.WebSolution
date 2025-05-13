@@ -92,30 +92,29 @@ namespace ToDoList.WebAPI.Controllers
         }
 
 
+
         // PUT: api/todoitems
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateTodoItem(Guid id, [FromBody] ToDoItemUpdateRequest request)
         {
             if (request == null) return BadRequest();
+
             // Extract userId from the JWT token using ClaimTypes.NameIdentifier
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
 
-            if (userIdClaim == null)
-            {
-                return Unauthorized("User ID claim not found.");
-            }
+            if (userIdClaim == null) return Unauthorized("User ID claim not found.");
 
-            var userId = Guid.Parse(userIdClaim.Value); // Parse the userId from the claim
 
-            // If the user is an admin, they can use the UserId from the request. Otherwise, fallback to the token-based userId
+            var userId = Guid.Parse(userIdClaim.Value); 
+
             var isAdmin = User.IsInRole("Admin");
             var actualUserId = isAdmin && request.UserId.HasValue ? request.UserId.Value : userId;
 
             // Set the TodoItem Id from the route parameter
             request.Id = id;
 
-            // Call the service to update the ToDoItem
+            
             var result = await _todoItemsService.UpdateTodoItemAsync(request, actualUserId, isAdmin);
 
             return Ok(result);
@@ -165,6 +164,7 @@ namespace ToDoList.WebAPI.Controllers
 
             return Ok(item);
         }
+
 
         [Authorize(Roles = "Admin")]
         // PATCH: api/todoitems/restore/{todoItemId}

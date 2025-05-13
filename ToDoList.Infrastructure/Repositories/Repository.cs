@@ -21,10 +21,6 @@ namespace ToDoList.Infrastructure.Repositories
             _dbSet = context.Set<T>();
         }
 
-        
-      
-
-        
 
         public async Task AddAsync(T entity)
         {
@@ -58,6 +54,11 @@ namespace ToDoList.Infrastructure.Repositories
         public Task<IEnumerable<T>> GetAllAsync()
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<T?> GetByIdAsync(Guid id)
+        {
+            return await _dbSet.FindAsync(id);
         }
     }
 }
