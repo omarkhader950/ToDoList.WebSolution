@@ -54,7 +54,7 @@ namespace ToDoList.Infrastructure.Repositories
        
 
         public async Task<T?> GetByIdAsync(Guid id)
-        {
+        {   
             return await _dbSet.FindAsync(id);
         }
     }

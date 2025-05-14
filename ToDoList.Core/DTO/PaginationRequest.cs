@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ToDoList.Core.Enums;
 
 namespace ToDoList.Core.DTO
 {
@@ -19,5 +20,20 @@ namespace ToDoList.Core.DTO
 
         public DateTime? CreatedAfter { get; set; }
         public DateTime? CreatedBefore { get; set; }
+
+
+        public DateTime? DueAfter { get; set; }
+        public DateTime? DueBefore { get; set; }
+
+        public List<TodoStatus>? Statuses { get; set; }
+
+        public string? Title { get; set; } 
+
+        public Guid? UserId { get; set; }
+
+        public string? SortBy { get; set; } = "Id"; 
+        public string? SortDirection { get; set; } = "asc"; 
+
+
     }
 }

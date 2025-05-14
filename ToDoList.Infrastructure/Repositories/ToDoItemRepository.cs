@@ -107,24 +107,44 @@ namespace ToDoList.Infrastructure.Repositories
             return true;
         }
 
-        
+
         public async Task<List<TodoItem>> GetPaginatedItemsAsync(PaginationRequest request)
         {
             var query = _db.TodoItems
                 .Include(t => t.User)
                 .AsQueryable();
 
-            // Apply filters on CreationDate only if values are provided
+            // Filter by creation date
             if (request.CreatedAfter.HasValue)
-            {
                 query = query.Where(t => t.CreationDate >= request.CreatedAfter.Value);
-            }
 
             if (request.CreatedBefore.HasValue)
-            {
                 query = query.Where(t => t.CreationDate <= request.CreatedBefore.Value);
+
+            // Filter by due date
+            if (request.DueAfter.HasValue)
+                query = query.Where(t => t.DueDate >= request.DueAfter.Value);
+
+            if (request.DueBefore.HasValue)
+                query = query.Where(t => t.DueDate <= request.DueBefore.Value);
+
+            // Filter by statuses
+            if (request.Statuses != null && request.Statuses.Any())
+                query = query.Where(t => request.Statuses.Contains(t.Status));
+
+            //  Filter by title (contains)
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                var keyword = request.Title.Trim().ToLower();
+                query = query.Where(t => t.Title.ToLower().Contains(keyword));
             }
 
+
+            // ✅ Apply dynamic sorting
+            query = ApplySorting(query, request.SortBy, request.SortDirection);
+
+
+            // Apply pagination
             var result = await query
                 .OrderBy(t => t.Id)
                 .Skip((request.PageNumber - 1) * request.PageSize)
@@ -134,10 +154,29 @@ namespace ToDoList.Infrastructure.Repositories
             return result;
         }
 
-      
+        //  Place this private helper method 
+        private IQueryable<TodoItem> ApplySorting(IQueryable<TodoItem> query, string? sortBy, string? sortDirection)
+        {
+            var isDescending = sortDirection?.ToLower() == "desc";
+            sortBy = string.IsNullOrWhiteSpace(sortBy) ? "Id" : sortBy;
+
+            return sortBy.ToLower() switch
+            {
+                "title" => isDescending ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title),
+                "status" => isDescending ? query.OrderByDescending(t => t.Status) : query.OrderBy(t => t.Status),
+                "duedate" => isDescending ? query.OrderByDescending(t => t.DueDate) : query.OrderBy(t => t.DueDate),
+                "creationdate" => isDescending ? query.OrderByDescending(t => t.CreationDate) : query.OrderBy(t => t.CreationDate),
+                "id" => isDescending ? query.OrderByDescending(t => t.Id) : query.OrderBy(t => t.Id),
+                _ => query.OrderBy(t => t.Id)
+            };
+        }
 
 
-        
+
+
+
+
+
         public async Task<List<TodoItem>> GetAllTodoItemsByUserAsync(Guid userId)
         {
             return await _db.TodoItems
