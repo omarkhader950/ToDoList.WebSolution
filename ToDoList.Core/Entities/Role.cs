@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using ToDoList.Core.Entities;
 
 namespace Entities
 {
-    public class Role
+    public class Role : BaseEntity
     {
-        [Key]
-        public Guid Id { get; set; }
+      
 
         [Required]
         public string Name { get; set; }

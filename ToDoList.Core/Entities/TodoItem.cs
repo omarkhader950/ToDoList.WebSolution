@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using ToDoList.Core.Entities;
 using ToDoList.Core.Enums;
 
 namespace Entities
@@ -9,10 +10,9 @@ namespace Entities
 
 
 
-    public class TodoItem
+    public class TodoItem : BaseEntity
     {
-        [Key]
-        public Guid Id { get; set; }
+        
 
         [Required]
         [MaxLength(100)]

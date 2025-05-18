@@ -5,12 +5,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using ToDoList.Core.Entities;
 using ToDoList.Core.Repositories;
 using ToDoList.Infrastructure.Data;
 
 namespace ToDoList.Infrastructure.Repositories
 {
-    public class Repository<T> : IRepository<T> where T : class
+    //make entity base
+    public class Repository<T> : IRepository<T> where T : BaseEntity
     {
         private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;

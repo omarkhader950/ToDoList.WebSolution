@@ -17,7 +17,7 @@ namespace ToDoList.Core.DTO
         [Range(1, 100, ErrorMessage = "Page size must be between 1 and 100")]
         public int PageSize { get; set; } = 10;
 
-
+        //create range class date range "DateTime" 
         public DateTime? CreatedAfter { get; set; }
         public DateTime? CreatedBefore { get; set; }
 
@@ -32,6 +32,8 @@ namespace ToDoList.Core.DTO
         public Guid? UserId { get; set; }
 
         public string? SortBy { get; set; } = "Id"; 
+
+        //make it true or false
         public string? SortDirection { get; set; } = "asc"; 
 
 

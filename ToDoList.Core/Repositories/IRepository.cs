@@ -5,10 +5,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using ToDoList.Core.Entities;
 
 namespace ToDoList.Core.Repositories
 {
-    public interface IRepository<T> where T : class
+    public interface IRepository<T> where T : BaseEntity
     {
 
        
@@ -19,17 +20,6 @@ namespace ToDoList.Core.Repositories
         void Update(T entity);
         void Remove(T entity);
         Task<int> SaveChangesAsync();
-
-
-
-       
-
-
-
-
-
-
-
 
     }
 }

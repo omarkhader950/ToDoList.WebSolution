@@ -136,11 +136,11 @@ namespace ToDoList.Infrastructure.Repositories
             if (!string.IsNullOrWhiteSpace(request.Title))
             {
                 var keyword = request.Title.Trim().ToLower();
-                query = query.Where(t => t.Title.ToLower().Contains(keyword));
+                query = query.Where(t => t.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase));
             }
 
 
-            // ✅ Apply dynamic sorting
+            //  Apply dynamic sorting
             query = ApplySorting(query, request.SortBy, request.SortDirection);
 
 
@@ -159,7 +159,8 @@ namespace ToDoList.Infrastructure.Repositories
         {
             var isDescending = sortDirection?.ToLower() == "desc";
             sortBy = string.IsNullOrWhiteSpace(sortBy) ? "Id" : sortBy;
-
+            // 1- convert swich case to dectionary
+            // 2- orderby dynamic
             return sortBy.ToLower() switch
             {
                 "title" => isDescending ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title),
