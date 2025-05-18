@@ -18,12 +18,10 @@ namespace ToDoList.Core.DTO
         public int PageSize { get; set; } = 10;
 
         //create range class date range "DateTime" 
-        public DateTime? CreatedAfter { get; set; }
-        public DateTime? CreatedBefore { get; set; }
 
+        public DateRange? CreatedDateRange { get; set; }
 
-        public DateTime? DueAfter { get; set; }
-        public DateTime? DueBefore { get; set; }
+        public DateRange? DueDateRange { get; set; }
 
         public List<TodoStatus>? Statuses { get; set; }
 
@@ -33,8 +31,9 @@ namespace ToDoList.Core.DTO
 
         public string? SortBy { get; set; } = "Id"; 
 
-        //make it true or false
-        public string? SortDirection { get; set; } = "asc"; 
+        
+        public bool SortAscending { get; set; } = true;
+
 
 
     }

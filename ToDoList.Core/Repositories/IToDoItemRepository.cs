@@ -12,18 +12,18 @@ namespace ToDoList.Core.Repositories
     public interface IToDoItemRepository : IRepository<TodoItem>
     {
         
-        Task<TodoItem?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId);
-        Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid tokenUserId, bool isAdmin);
+        Task<TodoItem?> GetByIdAsync(Guid? todoItemId, Guid userId);
+        Task<bool> DeleteAsync(Guid? todoItemId, Guid tokenUserId, bool isAdmin);
          Task<List<TodoItem>> GetAllDeletedItemsAsync();
         Task<TodoItem?> GetDeletedItemByIdAsync(Guid todoItemId);
-        Task<bool> RestoreTodoItemAsync(Guid todoItemId);
-        Task<List<TodoItem>> GetPaginatedItemsAsync(PaginationRequest request);
+        Task<bool> RestoreAsync(Guid todoItemId);
+        Task<List<TodoItem>> GetPaginatedAsync(PaginationRequest request);
 
-        Task<List<TodoItem>> GetAllTodoItemsByUserAsync(Guid userId);
+        Task<List<TodoItem>> GetAllByUserAsync(Guid userId);
 
         Task<List<TodoItem>> GetAllWithUserAsync();
 
-        Task<List<TodoItem>> GetItemsByIdsAsync(List<Guid> itemIds);
+        Task<List<TodoItem>> ListByIdsAsync(List<Guid> itemIds);
 
 
         Task<int> CountActiveAsync(Guid userId);

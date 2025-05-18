@@ -33,7 +33,7 @@ namespace Services
 
 
 
-            var result = await _repository.GetTodoItemByIdAsync(todoItemId,userId);
+            var result = await _repository.GetByIdAsync(todoItemId,userId);
 
           return   _mapper.Map<TodoItem, ToDoItemResponse>(result);
 
@@ -68,7 +68,7 @@ namespace Services
                 throw new ArgumentException("Todo item ID is required.", nameof(todoItemId));
 
 
-            return await _repository.DeleteTodoItemAsync(todoItemId, tokenUserId, isAdmin);
+            return await _repository.DeleteAsync(todoItemId, tokenUserId, isAdmin);
         }
 
 
@@ -131,7 +131,7 @@ namespace Services
         public async Task<bool> RestoreTodoItemAsync(Guid todoItemId)
         {
         
-            return await _repository.RestoreTodoItemAsync(todoItemId);
+            return await _repository.RestoreAsync(todoItemId);
         }
 
 
@@ -162,7 +162,7 @@ namespace Services
         {
  
             
-            List<TodoItem> todoItems =  await _repository.GetPaginatedItemsAsync(request);
+            List<TodoItem> todoItems =  await _repository.GetPaginatedAsync(request);
             return _mapper.MapList<TodoItem, ToDoItemResponse>(todoItems);
 
         }
@@ -171,7 +171,7 @@ namespace Services
         public async Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync(Guid userId)
         {
 
-            List<TodoItem> result = await _repository.GetAllTodoItemsByUserAsync(userId);
+            List<TodoItem> result = await _repository.GetAllByUserAsync(userId);
             return  _mapper.MapList<TodoItem, ToDoItemResponse>(result);
 
         }
@@ -200,7 +200,7 @@ namespace Services
 
         public async Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
         {
-            var items = await _repository.GetItemsByIdsAsync(itemIds);
+            var items = await _repository.ListByIdsAsync(itemIds);
 
             if (!isAdmin)
             {
@@ -219,7 +219,7 @@ namespace Services
 
         public async Task MarkAsCompletedAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
         {
-            var items = await _repository.GetItemsByIdsAsync(itemIds);
+            var items = await _repository.ListByIdsAsync(itemIds);
 
             if (!isAdmin && items.Any(t => t.UserId != currentUserId))
                 throw new UnauthorizedAccessException("You can only modify your own to-do items.");
