@@ -202,7 +202,7 @@ namespace Services
         }
 
         public async Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
-        {
+        { 
             var items = await _repository.ListByIdsAsync(itemIds);
 
             if (!isAdmin)
@@ -214,7 +214,7 @@ namespace Services
             foreach (var item in items)
             {
                 if (item.Status == TodoStatus.Completed)
-                    continue;
+                    throw new InvalidOperationException($"Cannot reset item with ID {item.Id} because its status is '{item.Status}'.");
 
                 item.Status = TodoStatus.InProgress;
 
@@ -249,9 +249,8 @@ namespace Services
 
             foreach (var item in items)
             {
-                // Skip completed items
                 if (item.Status == TodoStatus.Completed)
-                    continue;
+                    throw new InvalidOperationException($"Cannot reset item with ID {item.Id} because its status is '{item.Status}' .");
 
                 // Only update items that are currently InProgress
                 if (item.Status == TodoStatus.InProgress)
@@ -278,6 +277,12 @@ namespace Services
                 {
                     item.Status = TodoStatus.InProgress;
                 }
+                else
+                {
+                    throw new InvalidOperationException(
+                                   $"Cannot reset item with ID {item.Id} because its status is '{item.Status}', not 'Completed'.");
+                }
+
             }
 
             await _repository.SaveChangesAsync();

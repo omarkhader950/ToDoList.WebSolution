@@ -231,7 +231,7 @@ namespace ToDoList.WebAPI.Controllers
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
                 return Unauthorized("Invalid or missing user ID claim.");
-
+            //use http accessor to list user claims
             bool isAdmin = User.IsInRole("Admin");
 
             try
@@ -257,6 +257,7 @@ namespace ToDoList.WebAPI.Controllers
                 return BadRequest("No item IDs provided.");
 
             // Extract current user's ID from claims
+            
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
                 return Unauthorized("Invalid or missing user ID claim.");
@@ -294,7 +295,7 @@ namespace ToDoList.WebAPI.Controllers
             }
             catch (UnauthorizedAccessException)
             {
-                return Forbid();
+                return Forbid();    
             }
             catch (Exception ex)
             {
