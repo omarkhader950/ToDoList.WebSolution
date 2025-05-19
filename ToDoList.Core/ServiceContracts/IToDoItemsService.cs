@@ -11,9 +11,7 @@ namespace ServiceContracts
         
 
         Task<List<ToDoItemResponse>> AddTodoItemsAsync(
-     List<TodoItemAddRequest> requestList,
-     Guid tokenUserId,
-     bool isAdmin);
+     List<TodoItemAddRequest> requestList);
 
 
 
@@ -33,7 +31,7 @@ namespace ServiceContracts
         /// <summary>
         /// Gets a TodoItem by ID and UserId.
         /// </summary>
-        Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId);
+        Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId);
 
        
 

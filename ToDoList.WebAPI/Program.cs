@@ -7,6 +7,7 @@ using Services;
 using System.Reflection;
 using System.Text;
 using ToDoList.Core.Repositories;
+using ToDoList.Core.ServiceContracts;
 using ToDoList.Infrastructure.Data;
 using ToDoList.Infrastructure.Mapping;
 using ToDoList.Infrastructure.Repositories;
@@ -18,11 +19,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 
-// Add services to the container
+
 builder.Services.AddControllers();
 
 
-
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IToDoItemsService, ToDoItemsService>();
 builder.Services.AddScoped<IToDoItemRepository, ToDoItemRepository>();
 
@@ -63,6 +65,7 @@ builder.Services.AddAuthentication("Bearer")
     });
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline
 app.UseHttpsRedirection();

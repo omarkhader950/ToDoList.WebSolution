@@ -5,6 +5,9 @@ using ToDoList.Core.Repositories;
 using Entities;
 using ToDoList.Infrastructure.Mapping;
 using ToDoList.Core.Enums;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using ToDoList.Core.ServiceContracts;
 
 
 
@@ -17,27 +20,29 @@ namespace Services
 
         private readonly IToDoItemRepository _repository;
         private readonly IMappingService _mapper;
+        private readonly ICurrentUserService _currentUserService;
 
 
-        public ToDoItemsService(IToDoItemRepository repository, IMappingService mapper)
+        public ToDoItemsService(IToDoItemRepository repository, IMappingService mapper, ICurrentUserService currentUserService)
         {
             _repository = repository;
             _mapper = mapper;
+            _currentUserService = currentUserService;
         }
 
 
-        public async Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId, Guid userId)
+        public async Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId)
         {
             if (todoItemId == null)
                 return null;
 
+            var userId = _currentUserService.GetUserId();
+            if (userId == null)
+                throw new UnauthorizedAccessException("User ID not found.");
 
+            var result = await _repository.GetByIdAsync(todoItemId, userId.Value);
 
-            var result = await _repository.GetByIdAsync(todoItemId,userId);
-
-          return   _mapper.Map<TodoItem, ToDoItemResponse>(result);
-
-            
+            return _mapper.Map<TodoItem, ToDoItemResponse>(result);
         }
 
         public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? request, Guid actualUserId, bool isAdmin)
@@ -77,16 +82,22 @@ namespace Services
 
 
         public async Task<List<ToDoItemResponse>> AddTodoItemsAsync(
-     List<TodoItemAddRequest> requestList,
-     Guid tokenUserId,
-     bool isAdmin)
+     List<TodoItemAddRequest> requestList)
         {
+
+            var tokenUserId = _currentUserService.GetUserId();
+            if (tokenUserId == null)
+                throw new UnauthorizedAccessException("User ID not found.");
+
+            bool isAdmin = _currentUserService.IsInRole("Admin");
+
+
             var entities = requestList.Select(request =>
             {
                 var entity = _mapper.Map<TodoItemAddRequest, TodoItem>(request);
                 entity.UserId = isAdmin && request.UserId.HasValue
                     ? request.UserId.Value
-                    : tokenUserId;
+                    : tokenUserId.Value;
                 entity.CreationDate = DateTime.UtcNow;
                 return entity;
             }).ToList();

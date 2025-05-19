@@ -34,13 +34,7 @@ namespace ToDoList.WebAPI.Controllers
             if (requestList == null || requestList.Count == 0)
                 return BadRequest();
 
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var tokenUserId))
-                return Unauthorized("Invalid user.");
-
-            bool isAdmin = User.IsInRole("Admin");
-
-            var createdResponses = await _todoItemsService.AddTodoItemsAsync(requestList, tokenUserId, isAdmin);
+            var createdResponses = await _todoItemsService.AddTodoItemsAsync(requestList);
 
             return Created("", createdResponses);
         }
@@ -53,16 +47,18 @@ namespace ToDoList.WebAPI.Controllers
         [HttpGet("{todoItemId}")]
         public async Task<IActionResult> GetTodoItemById(Guid todoItemId)
         {
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            
+            try
+            {
+                var item = await _todoItemsService.GetTodoItemByIdAsync(todoItemId);
+                if (item == null)
+                    return NotFound();
 
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
-                return Unauthorized("Invalid or missing user ID claim.");
-
-            var item = await _todoItemsService.GetTodoItemByIdAsync(todoItemId, userId);
-            if (item == null) return NotFound();
-
-            return Ok(item);
+                return Ok(item);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
         }
 
         // GET: api/todoitems/by-user
