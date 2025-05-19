@@ -249,6 +249,64 @@ namespace ToDoList.WebAPI.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPut("status/new")]
+        public async Task<IActionResult> MarkItemsAsNew([FromBody] UpdateTodoStatusRequest request)
+        {
+            if (request == null || request.TodoItemIds == null || !request.TodoItemIds.Any())
+                return BadRequest("No item IDs provided.");
+
+            // Extract current user's ID from claims
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
+                return Unauthorized("Invalid or missing user ID claim.");
+
+            try
+            {
+                await _todoItemsService.MarkAsNewAsync(request.TodoItemIds, currentUserId);
+                return NoContent(); // 204
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("status/reset-to-inprogress")]
+        public async Task<IActionResult> ResetCompletedItemsToInProgress([FromBody] UpdateTodoStatusRequest request)
+        {
+            if (request == null || request.TodoItemIds == null || !request.TodoItemIds.Any())
+                return BadRequest("No item IDs provided.");
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
+                return Unauthorized("Invalid or missing user ID claim.");
+
+            try
+            {
+                await _todoItemsService.ResetCompletedToInProgressAsync(request.TodoItemIds, currentUserId, isAdmin: true);
+                return NoContent(); // 204
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
+
+
+
+
 
 
 

@@ -69,6 +69,10 @@ namespace ServiceContracts
          Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin);
 
         Task MarkAsCompletedAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin);
+
+        Task MarkAsNewAsync(List<Guid> itemIds, Guid currentUserId);
+
+        Task ResetCompletedToInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin);
     }
 
 }

@@ -50,9 +50,12 @@ namespace Services
             if (item == null || (!isAdmin && item.UserId != actualUserId))
                 throw new ArgumentException("Given todo item ID doesn't exist or access denied.");
 
+            if (item.Status == TodoStatus.Completed)
+                throw new InvalidOperationException("Cannot update a task that is already marked as Completed.");
+
             item.Title = request.Title!;
             item.Description = request.Description;
-            item.IsCompleted = request.IsCompleted;
+            item.Status = request.Status;
             item.DueDate = request.DueDate!.Value;
 
             await _repository.SaveChangesAsync();
@@ -210,7 +213,11 @@ namespace Services
 
             foreach (var item in items)
             {
+                if (item.Status == TodoStatus.Completed)
+                    continue;
+
                 item.Status = TodoStatus.InProgress;
+
             }
 
             await _repository.SaveChangesAsync(); 
@@ -231,6 +238,51 @@ namespace Services
 
             await _repository.SaveChangesAsync();
         }
+
+        public async Task MarkAsNewAsync(List<Guid> itemIds, Guid currentUserId)
+        {
+            var items = await _repository.ListByIdsAsync(itemIds);
+
+            // Only allow updating items that belong to the current user
+            if (items.Any(t => t.UserId != currentUserId))
+                throw new UnauthorizedAccessException("You can only modify your own to-do items.");
+
+            foreach (var item in items)
+            {
+                // Skip completed items
+                if (item.Status == TodoStatus.Completed)
+                    continue;
+
+                // Only update items that are currently InProgress
+                if (item.Status == TodoStatus.InProgress)
+                {
+                    item.Status = TodoStatus.New;
+                }
+            }
+
+            await _repository.SaveChangesAsync();
+        }
+
+
+        public async Task ResetCompletedToInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
+        {
+            if (!isAdmin)
+                throw new UnauthorizedAccessException("Only admins can change completed items.");
+
+            var items = await _repository.ListByIdsAsync(itemIds);
+
+            foreach (var item in items)
+            {
+                // Only update items that are Completed
+                if (item.Status == TodoStatus.Completed)
+                {
+                    item.Status = TodoStatus.InProgress;
+                }
+            }
+
+            await _repository.SaveChangesAsync();
+        }
+
 
 
 

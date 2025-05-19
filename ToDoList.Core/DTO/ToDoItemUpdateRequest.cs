@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ToDoList.Core.Enums;
 
 namespace ServiceContracts.DTO
 {
@@ -14,12 +15,9 @@ namespace ServiceContracts.DTO
         [Required(ErrorMessage = "Task ID can't be blank")]
         public Guid Id { get; set; }
 
-        public bool IsCompleted { get; set; }
-
-
-        
-
    
+
+        public TodoStatus Status { get; set; } = TodoStatus.InProgress;
 
 
     }

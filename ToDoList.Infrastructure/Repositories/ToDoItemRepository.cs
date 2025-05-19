@@ -5,6 +5,7 @@ using ServiceContracts.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using ToDoList.Core.DTO;
@@ -151,21 +152,31 @@ namespace ToDoList.Infrastructure.Repositories
             return result;
         }
 
+
+
+        private static readonly Dictionary<string, Expression<Func<TodoItem, object>>> SortSelectors =
+    new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["title"] = t => t.Title,
+        ["status"] = t => t.Status,
+        ["duedate"] = t => t.DueDate,
+        ["creationdate"] = t => t.CreationDate,
+        ["id"] = t => t.Id
+    };
         // 1- convert swich case to dectionary
         // 2- orderby dynamic
         private IQueryable<TodoItem> ApplySorting(IQueryable<TodoItem> query, string? sortBy, bool sortAscending)
         {
-            sortBy = string.IsNullOrWhiteSpace(sortBy) ? "Id" : sortBy.ToLower();
+            sortBy = string.IsNullOrWhiteSpace(sortBy) ? "id" : sortBy;
 
-            return sortBy switch
+            if (!SortSelectors.TryGetValue(sortBy, out var sortExpression))
             {
-                "title" => sortAscending ? query.OrderBy(t => t.Title) : query.OrderByDescending(t => t.Title),
-                "status" => sortAscending ? query.OrderBy(t => t.Status) : query.OrderByDescending(t => t.Status),
-                "duedate" => sortAscending ? query.OrderBy(t => t.DueDate) : query.OrderByDescending(t => t.DueDate),
-                "creationdate" => sortAscending ? query.OrderBy(t => t.CreationDate) : query.OrderByDescending(t => t.CreationDate),
-                "id" => sortAscending ? query.OrderBy(t => t.Id) : query.OrderByDescending(t => t.Id),
-                _ => sortAscending ? query.OrderBy(t => t.Id) : query.OrderByDescending(t => t.Id)
-            };
+                sortExpression = t => t.Id;
+            }
+
+            return sortAscending
+                ? query.OrderBy(sortExpression)
+                : query.OrderByDescending(sortExpression);
         }
 
 
