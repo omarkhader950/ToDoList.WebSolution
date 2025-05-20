@@ -38,5 +38,11 @@ namespace ToDoList.Infrastructure.Services
         {
             return _httpContextAccessor.HttpContext?.User?.IsInRole(role) ?? false;
         }
+
+        public bool IsAdmin(string role)
+        {
+           
+            return _httpContextAccessor.HttpContext?.User?.IsInRole(role) ?? false;
+        }
     }
 }
