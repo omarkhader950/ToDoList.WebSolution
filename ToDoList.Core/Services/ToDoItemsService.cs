@@ -45,14 +45,23 @@ namespace Services
             return _mapper.Map<TodoItem, ToDoItemResponse>(result);
         }
 
-        public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? request, Guid actualUserId, bool isAdmin)
+        public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? request)
         {
 
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            var currentUserId = _currentUserService.GetUserId();
+            if (currentUserId == null)
+                throw new UnauthorizedAccessException("User is not authenticated.");
+
+            var isAdmin = _currentUserService.IsInRole("Admin");
+            var effectiveUserId = isAdmin && request.UserId.HasValue
+                ? request.UserId.Value
+                : currentUserId.Value;
 
             var item = await _repository.GetByIdAsync(request.Id);
-
-            if (item == null || (!isAdmin && item.UserId != actualUserId))
+            if (item == null || (!isAdmin && item.UserId != effectiveUserId))
                 throw new ArgumentException("Given todo item ID doesn't exist or access denied.");
 
             if (item.Status == TodoStatus.Completed)
@@ -65,18 +74,23 @@ namespace Services
 
             await _repository.SaveChangesAsync();
             return _mapper.Map<TodoItem, ToDoItemResponse>(item);
-             
+
         }
 
 
   
-        public async Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid tokenUserId, bool isAdmin)
+        public async Task<bool> DeleteTodoItemAsync(Guid? todoItemId)
         {
             if (todoItemId == Guid.Empty)
                 throw new ArgumentException("Todo item ID is required.", nameof(todoItemId));
 
+            var currentUserId = _currentUserService.GetUserId();
+            if (currentUserId == null)
+                throw new UnauthorizedAccessException("User is not authenticated.");
 
-            return await _repository.DeleteAsync(todoItemId, tokenUserId, isAdmin);
+            var isAdmin = _currentUserService.IsInRole("Admin");
+
+            return await _repository.DeleteAsync(todoItemId, currentUserId.Value, isAdmin);
         }
 
 
@@ -127,7 +141,11 @@ namespace Services
         /// <returns>List of deleted todo items mapped to response models.</returns>
         public async Task<List<ToDoItemResponse>> GetAllDeletedItemsAsync()
         {
+            bool isAdmin = _currentUserService.IsInRole("Admin");
+            if (isAdmin == false)
+                throw new UnauthorizedAccessException("Admins only");
 
+           
 
             List<TodoItem> todoItems =  await _repository.GetAllDeletedItemsAsync();
 
@@ -144,7 +162,11 @@ namespace Services
         /// <returns>True if the item was found and restored; otherwise, false.</returns>
         public async Task<bool> RestoreTodoItemAsync(Guid todoItemId)
         {
-        
+
+            bool isAdmin = _currentUserService.IsInRole("Admin");
+            if (isAdmin == false)
+                throw new UnauthorizedAccessException("Admins only");
+
             return await _repository.RestoreAsync(todoItemId);
         }
 
@@ -156,9 +178,11 @@ namespace Services
         /// <returns>The soft-deleted todo item mapped to a response model, or null if not found.</returns>
         public async Task<ToDoItemResponse?> GetDeletedItemByIdAsync(Guid todoItemId)
         {
-           
 
 
+            bool isAdmin = _currentUserService.IsInRole("Admin");
+            if (isAdmin == false)
+                throw new UnauthorizedAccessException("Admins only");
 
             TodoItem? todoItem =  await _repository.GetDeletedItemByIdAsync(todoItemId);
 
@@ -182,10 +206,16 @@ namespace Services
         }
 
 
-        public async Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync(Guid userId)
+        public async Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync()
         {
 
-            List<TodoItem> result = await _repository.GetAllByUserAsync(userId);
+            var userId =  _currentUserService.GetUserId();
+
+            if (userId == null)
+                throw new UnauthorizedAccessException("User ID not found.");
+
+
+            List<TodoItem> result = await _repository.GetAllByUserAsync(userId.Value);
             return  _mapper.MapList<TodoItem, ToDoItemResponse>(result);
 
         }
@@ -194,6 +224,8 @@ namespace Services
      
         public async Task<List<UserWithTodoItemsResponse>> GetAllTodoItemsGroupedByUserAsync()
         {
+            if (!_currentUserService.IsInRole("Admin"))
+                throw new UnauthorizedAccessException("Only admins can access this data.");
 
             var items = await _repository.GetAllWithUserAsync();
 
@@ -206,17 +238,22 @@ namespace Services
                     TodoItems = g.Select(t => _mapper.Map<TodoItem, ToDoItemResponse>(t)).ToList()
                 })
                 .ToList();
-
-
-
-           
         }
 
-        public async Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
-        { 
+        public async Task MarkAsInProgressAsync(List<Guid> itemIds)
+        {
+
+            var currentUserId = _currentUserService.GetUserId();
+           
+            if (currentUserId == null)
+                throw new UnauthorizedAccessException("User ID not found.");
+
+            bool isAdmin = _currentUserService.IsInRole("Admin");
+
             var items = await _repository.ListByIdsAsync(itemIds);
 
-            if (!isAdmin)
+
+            if (!isAdmin)   
             {
                 if (items.Any(t => t.UserId != currentUserId))
                     throw new UnauthorizedAccessException("You can only modify your own to-do items.");
@@ -235,8 +272,17 @@ namespace Services
         }
 
 
-        public async Task MarkAsCompletedAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
+        public async Task MarkAsCompletedAsync(List<Guid> itemIds)
         {
+
+            var currentUserId = _currentUserService.GetUserId();
+
+            if (currentUserId == null)
+                throw new UnauthorizedAccessException("User ID not found.");
+
+            bool isAdmin = _currentUserService.IsInRole("Admin");
+
+
             var items = await _repository.ListByIdsAsync(itemIds);
 
             if (!isAdmin && items.Any(t => t.UserId != currentUserId))
@@ -250,8 +296,18 @@ namespace Services
             await _repository.SaveChangesAsync();
         }
 
-        public async Task MarkAsNewAsync(List<Guid> itemIds, Guid currentUserId)
+        public async Task MarkAsNewAsync(List<Guid> itemIds)
         {
+
+
+            var currentUserId = _currentUserService.GetUserId();
+
+            if (currentUserId == null)
+                throw new UnauthorizedAccessException("User ID not found.");
+
+            bool isAdmin = _currentUserService.IsInRole("Admin");
+
+
             var items = await _repository.ListByIdsAsync(itemIds);
 
             // Only allow updating items that belong to the current user
@@ -274,8 +330,10 @@ namespace Services
         }
 
 
-        public async Task ResetCompletedToInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin)
+        public async Task ResetCompletedToInProgressAsync(List<Guid> itemIds)
         {
+            bool isAdmin = _currentUserService.IsInRole("Admin");
+
             if (!isAdmin)
                 throw new UnauthorizedAccessException("Only admins can change completed items.");
 

@@ -20,7 +20,7 @@ namespace ServiceContracts
         /// <summary>
         /// Returns all TodoItems for a specific user.
         /// </summary>
-        Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync(Guid userId);
+        Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync();
 
         /// <summary>
         /// Returns a paginated list of TodoItems.
@@ -36,12 +36,12 @@ namespace ServiceContracts
        
 
 
-        Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest, Guid actualUserId, bool isAdmin);
+        Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? todoItemUpdateRequest);
 
         /// <summary>
         /// Deletes a TodoItem by its ID and UserId.
         /// </summary>
-        Task<bool> DeleteTodoItemAsync(Guid? todoItemId, Guid tokenUserId, bool isAdmin);
+        Task<bool> DeleteTodoItemAsync(Guid? todoItemId);
 
         /// <summary>
         /// Gets all deleted items (admin use).
@@ -64,13 +64,13 @@ namespace ServiceContracts
 
 
 
-         Task MarkAsInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin);
+         Task MarkAsInProgressAsync(List<Guid> itemIds);
 
-        Task MarkAsCompletedAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin);
+        Task MarkAsCompletedAsync(List<Guid> itemIds);
 
-        Task MarkAsNewAsync(List<Guid> itemIds, Guid currentUserId);
+        Task MarkAsNewAsync(List<Guid> itemIds);
 
-        Task ResetCompletedToInProgressAsync(List<Guid> itemIds, Guid currentUserId, bool isAdmin);
+        Task ResetCompletedToInProgressAsync(List<Guid> itemIds);
     }
 
 }

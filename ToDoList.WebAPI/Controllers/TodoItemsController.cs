@@ -65,14 +65,8 @@ namespace ToDoList.WebAPI.Controllers
         [HttpGet("by-user")]
         public async Task<IActionResult> GetTodoItemsByUser()
         {
-            // Extract user ID from the JWT token claims
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
-                return Unauthorized("Invalid or missing user ID claim.");
-
-            // Get the items by user
-            var userItems = await _todoItemsService.GetAllTodoItemsByUserAsync(userId);
+        
+            var userItems = await _todoItemsService.GetAllTodoItemsByUserAsync();
             return Ok(userItems);
         }
 
@@ -91,27 +85,14 @@ namespace ToDoList.WebAPI.Controllers
 
         // PUT: api/todoitems
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateTodoItem(Guid id, [FromBody] ToDoItemUpdateRequest request)
         {
             if (request == null) return BadRequest();
 
-            // Extract userId from the JWT token using ClaimTypes.NameIdentifier
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null) return Unauthorized("User ID claim not found.");
-
-
-            var userId = Guid.Parse(userIdClaim.Value); 
-
-            var isAdmin = User.IsInRole("Admin");
-            var actualUserId = isAdmin && request.UserId.HasValue ? request.UserId.Value : userId;
-
-            // Set the TodoItem Id from the route parameter
             request.Id = id;
 
             
-            var result = await _todoItemsService.UpdateTodoItemAsync(request, actualUserId, isAdmin);
+            var result = await _todoItemsService.UpdateTodoItemAsync(request);
 
             return Ok(result);
         }
@@ -120,17 +101,10 @@ namespace ToDoList.WebAPI.Controllers
         
         // DELETE: api/todoitems/{todoItemId}
         [HttpDelete("{todoItemId}")]
-        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> DeleteTodoItem(Guid todoItemId)
         {
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
-                return Unauthorized("Invalid or missing user ID claim.");
-
-            bool isAdmin = User.IsInRole("Admin");
-
-            var success = await _todoItemsService.DeleteTodoItemAsync(todoItemId, tokenUserId, isAdmin);
-            if (!success) return NotFound();
+            var deleted = await _todoItemsService.DeleteTodoItemAsync(todoItemId);
+            if (!deleted) return NotFound();
 
             return NoContent();
         }
@@ -195,15 +169,10 @@ namespace ToDoList.WebAPI.Controllers
             if (request == null || request.TodoItemIds == null || !request.TodoItemIds.Any())
                 return BadRequest("No IDs provided.");
 
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
-                return Unauthorized("Invalid or missing user ID claim.");
-
-            bool isAdmin = User.IsInRole("Admin");
-
+       
             try
             {
-                await _todoItemsService.MarkAsInProgressAsync(request.TodoItemIds, tokenUserId, isAdmin);
+                await _todoItemsService.MarkAsInProgressAsync(request.TodoItemIds);
                 return NoContent();
             }
             catch (UnauthorizedAccessException ex)
@@ -224,15 +193,11 @@ namespace ToDoList.WebAPI.Controllers
             if (request == null || request.TodoItemIds == null || !request.TodoItemIds.Any())
                 return BadRequest("No IDs provided.");
 
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid tokenUserId))
-                return Unauthorized("Invalid or missing user ID claim.");
-            //use http accessor to list user claims
-            bool isAdmin = User.IsInRole("Admin");
+           
 
             try
             {
-                await _todoItemsService.MarkAsCompletedAsync(request.TodoItemIds, tokenUserId, isAdmin);
+                await _todoItemsService.MarkAsCompletedAsync(request.TodoItemIds);
                 return NoContent();
             }
             catch (UnauthorizedAccessException ex)
@@ -252,15 +217,9 @@ namespace ToDoList.WebAPI.Controllers
             if (request == null || request.TodoItemIds == null || !request.TodoItemIds.Any())
                 return BadRequest("No item IDs provided.");
 
-            // Extract current user's ID from claims
-            
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
-                return Unauthorized("Invalid or missing user ID claim.");
-
             try
             {
-                await _todoItemsService.MarkAsNewAsync(request.TodoItemIds, currentUserId);
+                await _todoItemsService.MarkAsNewAsync(request.TodoItemIds);
                 return NoContent(); // 204
             }
             catch (UnauthorizedAccessException)
@@ -273,6 +232,8 @@ namespace ToDoList.WebAPI.Controllers
             }
         }
 
+
+
         [Authorize(Roles = "Admin")]
         [HttpPut("status/reset-to-inprogress")]
         public async Task<IActionResult> ResetCompletedItemsToInProgress([FromBody] UpdateTodoStatusRequest request)
@@ -280,13 +241,9 @@ namespace ToDoList.WebAPI.Controllers
             if (request == null || request.TodoItemIds == null || !request.TodoItemIds.Any())
                 return BadRequest("No item IDs provided.");
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
-                return Unauthorized("Invalid or missing user ID claim.");
-
             try
             {
-                await _todoItemsService.ResetCompletedToInProgressAsync(request.TodoItemIds, currentUserId, isAdmin: true);
+                await _todoItemsService.ResetCompletedToInProgressAsync(request.TodoItemIds);
                 return NoContent(); // 204
             }
             catch (UnauthorizedAccessException)
