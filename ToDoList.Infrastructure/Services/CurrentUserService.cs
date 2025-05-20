@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using ToDoList.Core.Constants;
 using ToDoList.Core.ServiceContracts;
 
 namespace ToDoList.Infrastructure.Services
@@ -39,10 +40,9 @@ namespace ToDoList.Infrastructure.Services
             return _httpContextAccessor.HttpContext?.User?.IsInRole(role) ?? false;
         }
 
-        public bool IsAdmin(string role)
+        public bool IsAdmin()
         {
-           
-            return _httpContextAccessor.HttpContext?.User?.IsInRole(role) ?? false;
+            return _httpContextAccessor.HttpContext?.User?.IsInRole(UserRoles.Admin) ?? false;
         }
     }
 }

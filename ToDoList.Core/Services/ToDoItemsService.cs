@@ -160,7 +160,7 @@ namespace Services
         public async Task<bool> RestoreTodoItemAsync(Guid todoItemId)
         {
 
-            bool isAdmin = _currentUserService.IsInRole("Admin");
+            bool isAdmin = _currentUserService.IsAdmin();
             if (isAdmin == false)
                 throw new UnauthorizedAccessException(ErrorMessages.AdminsOnly);
 

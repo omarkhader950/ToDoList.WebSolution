@@ -22,6 +22,7 @@ namespace ToDoList.Core.Constants
         public const string InvalidItemStatus = "Cannot reset item because its status is not 'Completed'.";
 
         public const string CannotResetUnlessCompleted = "Cannot reset item because its status is not 'Completed'.";
-
+        public const string InvalidPagination = "Page number and page size must be greater than 0.";
+        public const string EmptyTodoItemList = "At least one ToDo item must be provided.";
     }
 }

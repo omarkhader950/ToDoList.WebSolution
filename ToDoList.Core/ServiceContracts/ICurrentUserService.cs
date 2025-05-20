@@ -10,7 +10,7 @@ namespace ToDoList.Core.ServiceContracts
     {
         Guid? GetUserId();
         string? GetUserName();
-
+        public bool IsAdmin();
         bool IsInRole(string role);
     }
 }

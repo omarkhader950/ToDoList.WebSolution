@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ServiceContracts;
 using ServiceContracts.DTO;
+using ToDoList.Core.Constants;
 
 
 namespace ToDoList.WebAPI.Controllers
@@ -29,7 +30,7 @@ namespace ToDoList.WebAPI.Controllers
                 User user = await _usersService.RegisterUserAsync(registerRequest);
                 return Ok(new
                 {
-                    message = "User registered successfully.",
+                    message = SuccessMessages.UserRegistered,
                     userId = user.Id,
                     username = user.Username
                 });
@@ -51,7 +52,7 @@ namespace ToDoList.WebAPI.Controllers
             var token = await _usersService.LoginUserAsync(loginRequest);
 
             if (token == null)
-                return Unauthorized(new { error = "Invalid username or password." });
+                return Unauthorized(new { error = AuthErrorMessages.InvalidCredentials });
 
             return Ok(new { token });
         }

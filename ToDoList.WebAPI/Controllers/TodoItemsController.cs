@@ -8,6 +8,7 @@ using Services;
 using ToDoList.Core.DTO;
 using Entities;
 using Mapster;
+using ToDoList.Core.Constants;
 
 namespace ToDoList.WebAPI.Controllers
 {
@@ -32,7 +33,7 @@ namespace ToDoList.WebAPI.Controllers
         public async Task<IActionResult> AddTodoItem([FromBody] List<TodoItemAddRequest> requestList)
         {
             if (requestList == null || requestList.Count == 0)
-                return BadRequest();
+                return BadRequest(ErrorMessages.EmptyTodoItemList);
 
             var createdResponses = await _todoItemsService.AddTodoItemsAsync(requestList);
 
@@ -155,8 +156,8 @@ namespace ToDoList.WebAPI.Controllers
         [HttpGet("paginated")]
         public async Task<IActionResult> GetPaginatedTodoItems([FromQuery] PaginationRequest request)
         {
-            if (request.PageNumber <= 0 || request.PageSize <= 0)
-                return BadRequest("Page number and page size must be greater than 0.");
+            if (request.PageNumber <= ValidationConstants.MinPageNumber || request.PageSize <= ValidationConstants.MinPageSize)
+                return BadRequest(ErrorMessages.InvalidPagination);
 
             var paginatedItems = await _todoItemsService.GetPaginatedItemsAsync(request);
             return Ok(paginatedItems);
