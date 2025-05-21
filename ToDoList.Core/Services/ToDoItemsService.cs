@@ -22,13 +22,15 @@ namespace Services
         private readonly IToDoItemRepository _repository;
         private readonly IMappingService _mapper;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IUserValidator _userValidator;
 
 
-        public ToDoItemsService(IToDoItemRepository repository, IMappingService mapper, ICurrentUserService currentUserService)
+        public ToDoItemsService(IToDoItemRepository repository, IMappingService mapper, ICurrentUserService currentUserService, IUserValidator userValidator)
         {
             _repository = repository;
             _mapper = mapper;
             _currentUserService = currentUserService;
+            _userValidator = userValidator;
         }
 
 
@@ -38,8 +40,9 @@ namespace Services
                 return null;
 
             var userId = _currentUserService.GetUserId();
-            if (userId == null)
-                throw new UnauthorizedAccessException(ErrorMessages.UnauthorizedUser);
+
+            _userValidator.ValidateUserAccess(userId);
+
 
             var result = await _repository.GetByIdAsync(todoItemId, userId.Value);
 
@@ -53,10 +56,11 @@ namespace Services
                 throw new ArgumentNullException(nameof(request));
 
             var currentUserId = _currentUserService.GetUserId();
-            if (currentUserId == null)
-                throw new UnauthorizedAccessException(ErrorMessages.UserNotAuthenticated);
 
-            var isAdmin = _currentUserService.IsInRole("Admin");
+            _userValidator.ValidateUserAccess(currentUserId);
+
+
+            var isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
             var effectiveUserId = isAdmin && request.UserId.HasValue
                 ? request.UserId.Value
                 : currentUserId.Value;
@@ -89,7 +93,7 @@ namespace Services
             if (currentUserId == null)
                 throw new UnauthorizedAccessException(ErrorMessages.UserNotAuthenticated);
 
-            var isAdmin = _currentUserService.IsInRole("Admin");
+            var isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
 
             return await _repository.DeleteAsync(todoItemId, currentUserId.Value, isAdmin);
         }
@@ -104,7 +108,7 @@ namespace Services
             if (tokenUserId == null)
                 throw new UnauthorizedAccessException(ErrorMessages.UnauthorizedUser);
 
-            bool isAdmin = _currentUserService.IsInRole("Admin");
+            bool isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
 
 
             var entities = requestList.Select(request =>
@@ -138,7 +142,7 @@ namespace Services
 
         public async Task<List<ToDoItemResponse>> GetAllDeletedItemsAsync()
         {
-            bool isAdmin = _currentUserService.IsInRole("Admin");
+            bool isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
             if (isAdmin == false)
                 throw new UnauthorizedAccessException(ErrorMessages.AdminsOnly);
 
@@ -177,7 +181,7 @@ namespace Services
         {
 
 
-            bool isAdmin = _currentUserService.IsInRole("Admin");
+            bool isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
             if (isAdmin == false)
                 throw new UnauthorizedAccessException(ErrorMessages.AdminsOnly);
 
