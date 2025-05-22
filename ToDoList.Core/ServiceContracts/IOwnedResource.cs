@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ToDoList.Core.ServiceContracts
 {
-    public interface IUserValidator
+    public interface IOwnedResource
     {
-        void ValidateAdminAccess(bool? isAdmin);
-        void ValidateUserAccess(Guid? userId);
+        Guid OwnerId { get; }
+
     }
 }

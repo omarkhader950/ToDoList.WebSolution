@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using ToDoList.Core.Entities;
 using ToDoList.Core.Enums;
+using ToDoList.Core.ServiceContracts;
 
 namespace Entities
 {
@@ -10,7 +12,7 @@ namespace Entities
 
 
 
-    public class TodoItem : BaseEntity
+    public class TodoItem : BaseEntity , IOwnedResource
     {
         
 
@@ -45,6 +47,10 @@ namespace Entities
 
         // Status using the enum
         public TodoStatus Status { get; set; } = TodoStatus.New;
+
+        [NotMapped]
+        // Map UserId to OwnerId
+        public Guid OwnerId => UserId;
 
     }
 }
