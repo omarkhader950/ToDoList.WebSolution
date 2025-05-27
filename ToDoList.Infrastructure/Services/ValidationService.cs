@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,15 +16,24 @@ namespace ToDoList.Infrastructure.Services
         private readonly ICurrentUserService _currentUser;
 
 
-        public ValidationService( ICurrentUserService currentUser)
+        public ValidationService(ICurrentUserService currentUser)
         {
             _currentUser = currentUser;
         }
+
+
 
         public void EnsureUserIsAuthenticated(Guid? userId)
         {
             if (userId == null || userId == Guid.Empty)
                 throw new UnauthorizedAccessException(ErrorMessages.UnauthorizedUser);
+        }
+
+        public void ValidateMaxActiveItemsLimit(int currentActiveCount)
+        {
+
+            if (currentActiveCount >= ValidationConstants.MaxActiveItemsLimit)
+                throw new InvalidOperationException(ErrorMessages.UserHasMaxActiveItems);
         }
 
         public void ValidateTodoItemStatusForUpdate(TodoStatus? status)
@@ -32,7 +42,7 @@ namespace ToDoList.Infrastructure.Services
                 throw new InvalidOperationException(ErrorMessages.CannotUpdateCompletedTask);
         }
 
-      
+
 
         public void ValidateUserIsAdmin(bool isAdmin)
         {
@@ -48,10 +58,23 @@ namespace ToDoList.Infrastructure.Services
             }
         }
 
-        public void ValidateUserOwnsResource<T>(T resource, Guid userId ,bool isAdmin) where T : IOwnedResource
+        public void ValidateUserOwnsResource<T>(T resource, Guid userId, bool isAdmin) where T : IOwnedResource
         {
             if (resource == null || (!isAdmin && resource.OwnerId != userId))
                 throw new ArgumentException(ErrorMessages.TodoItemNotFoundOrAccessDenied);
         }
+
+        public void ValidateUserOwnsResource<T>(T resource, Guid userId) where T : IOwnedResource
+        {
+            if (resource == null || (resource.OwnerId != userId))
+                throw new ArgumentException(ErrorMessages.TodoItemNotFoundOrAccessDenied);
+        }
+
+        public void ValidateAllItemsAreCompleted(IEnumerable<TodoItem> items)
+        {
+            if (items.Any(item => item.Status != TodoStatus.Completed))
+                throw new InvalidOperationException(ErrorMessages.CannotResetUnlessCompleted);
+        }
+
     }
 }

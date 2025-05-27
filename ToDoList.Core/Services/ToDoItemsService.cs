@@ -15,7 +15,7 @@ using ToDoList.Core.Constants;
 
 namespace Services
 {
-    public class ToDoItemsService : IToDoItemsService 
+    public class ToDoItemsService : IToDoItemsService
     {
 
 
@@ -75,7 +75,7 @@ namespace Services
 
 
             _validationService.ValidateTodoItemStatusForUpdate(item.Status);
-         
+
 
             item.Title = request.Title!;
             item.Description = request.Description;
@@ -88,15 +88,15 @@ namespace Services
         }
 
 
-  
+
         public async Task<bool> DeleteTodoItemAsync(Guid? todoItemId)
         {
-            if (todoItemId == Guid.Empty)
-                throw new ArgumentException(ErrorMessages.TodoItemIdIsRequired, nameof(todoItemId));
+
 
             var currentUserId = _currentUserService.GetUserId();
-            if (currentUserId == null)
-                throw new UnauthorizedAccessException(ErrorMessages.UserNotAuthenticated);
+
+            _validationService.EnsureUserIsAuthenticated(currentUserId);
+
 
             var isAdmin = _currentUserService.IsAdmin();
 
@@ -109,11 +109,10 @@ namespace Services
      List<TodoItemAddRequest> requestList)
         {
 
-            var tokenUserId = _currentUserService.GetUserId();
-            if (tokenUserId == null)
-                throw new UnauthorizedAccessException(ErrorMessages.UnauthorizedUser);
+            var userId = _currentUserService.GetUserId();
+            _validationService.EnsureUserIsAuthenticated(userId);
 
-            bool isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
+            bool isAdmin = _currentUserService.IsAdmin();
 
 
             var entities = requestList.Select(request =>
@@ -121,7 +120,7 @@ namespace Services
                 var entity = _mapper.Map<TodoItemAddRequest, TodoItem>(request);
                 entity.UserId = isAdmin && request.UserId.HasValue
                     ? request.UserId.Value
-                    : tokenUserId.Value;
+                    : userId.Value;
                 entity.CreationDate = DateTime.UtcNow;
                 return entity;
             }).ToList();
@@ -131,8 +130,7 @@ namespace Services
             foreach (var item in entities)
             {
                 int activeCount = await _repository.CountActiveAsync(item.UserId);
-                if (activeCount >= 10)
-                    throw new InvalidOperationException(ErrorMessages.UserHasMaxActiveItems);
+                _validationService.ValidateMaxActiveItemsLimit(activeCount);
 
                 await _repository.AddAsync(item);
                 result.Add(item);
@@ -147,13 +145,12 @@ namespace Services
 
         public async Task<List<ToDoItemResponse>> GetAllDeletedItemsAsync()
         {
-            bool isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
-            if (isAdmin == false)
-                throw new UnauthorizedAccessException(ErrorMessages.AdminsOnly);
+            bool isAdmin = _currentUserService.IsAdmin();
 
-           
 
-            List<TodoItem> todoItems =  await _repository.GetAllDeletedItemsAsync();
+            _validationService.ValidateUserIsAdmin(isAdmin);
+
+            List<TodoItem> todoItems = await _repository.GetAllDeletedItemsAsync();
 
             return _mapper.MapList<TodoItem, ToDoItemResponse>(todoItems);
 
@@ -170,8 +167,9 @@ namespace Services
         {
 
             bool isAdmin = _currentUserService.IsAdmin();
-            if (isAdmin == false)
-                throw new UnauthorizedAccessException(ErrorMessages.AdminsOnly);
+
+            _validationService.ValidateUserIsAdmin(isAdmin);
+
 
             return await _repository.RestoreAsync(todoItemId);
         }
@@ -186,11 +184,12 @@ namespace Services
         {
 
 
-            bool isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
-            if (isAdmin == false)
-                throw new UnauthorizedAccessException(ErrorMessages.AdminsOnly);
+            bool isAdmin = _currentUserService.IsAdmin();
 
-            TodoItem? todoItem =  await _repository.GetDeletedItemByIdAsync(todoItemId);
+            _validationService.ValidateUserIsAdmin(isAdmin);
+
+
+            TodoItem? todoItem = await _repository.GetDeletedItemByIdAsync(todoItemId);
 
             if (todoItem == null) return null;
 
@@ -201,12 +200,12 @@ namespace Services
 
 
 
-       
+
         public async Task<List<ToDoItemResponse>> GetPaginatedItemsAsync(PaginationRequest request)
         {
- 
-            
-            List<TodoItem> todoItems =  await _repository.GetPaginatedAsync(request);
+
+
+            List<TodoItem> todoItems = await _repository.GetPaginatedAsync(request);
             return _mapper.MapList<TodoItem, ToDoItemResponse>(todoItems);
 
         }
@@ -215,23 +214,24 @@ namespace Services
         public async Task<List<ToDoItemResponse>> GetAllTodoItemsByUserAsync()
         {
 
-            var userId =  _currentUserService.GetUserId();
+            var userId = _currentUserService.GetUserId();
 
-            if (userId == null)
-                throw new UnauthorizedAccessException(ErrorMessages.UnauthorizedUser);
+            _validationService.EnsureUserIsAuthenticated(userId);
 
 
             List<TodoItem> result = await _repository.GetAllByUserAsync(userId.Value);
-            return  _mapper.MapList<TodoItem, ToDoItemResponse>(result);
+            return _mapper.MapList<TodoItem, ToDoItemResponse>(result);
 
         }
 
 
-     
+
         public async Task<List<UserWithTodoItemsResponse>> GetAllTodoItemsGroupedByUserAsync()
         {
-            if (!_currentUserService.IsInRole(UserRoles.Admin))
-                throw new UnauthorizedAccessException(ErrorMessages.AdminsOnly);
+
+            bool isAdmin = _currentUserService.IsAdmin();
+
+            _validationService.ValidateUserIsAdmin(isAdmin);
 
             var items = await _repository.GetAllWithUserAsync();
 
@@ -250,31 +250,29 @@ namespace Services
         {
 
             var currentUserId = _currentUserService.GetUserId();
-           
-            if (currentUserId == null)
-                throw new UnauthorizedAccessException(ErrorMessages.UnauthorizedUser);
 
-            bool isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
+            _validationService.EnsureUserIsAuthenticated(currentUserId);
+
+
+            bool isAdmin = _currentUserService.IsAdmin();
 
             var items = await _repository.ListByIdsAsync(itemIds);
 
 
-            if (!isAdmin)   
-            {
-                if (items.Any(t => t.UserId != currentUserId))
-                    throw new UnauthorizedAccessException(ErrorMessages.ModifyOwnItemsOnly);
-            }
 
             foreach (var item in items)
             {
-                if (item.Status == TodoStatus.Completed)
-                    throw new InvalidOperationException(ErrorMessages.InvalidItemStatus);
+                _validationService.ValidateUserOwnsResource(item, currentUserId.Value, isAdmin);
+
+                _validationService.ValidateTodoItemStatusForUpdate(item.Status);
+
 
                 item.Status = TodoStatus.InProgress;
 
             }
 
-            await _repository.SaveChangesAsync(); 
+
+            await _repository.SaveChangesAsync();
         }
 
 
@@ -283,19 +281,20 @@ namespace Services
 
             var currentUserId = _currentUserService.GetUserId();
 
-            if (currentUserId == null)
-                throw new UnauthorizedAccessException(ErrorMessages.UnauthorizedUser);
+            _validationService.EnsureUserIsAuthenticated(currentUserId);
 
-            bool isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
+
+            bool isAdmin = _currentUserService.IsAdmin();
 
 
             var items = await _repository.ListByIdsAsync(itemIds);
 
-            if (!isAdmin && items.Any(t => t.UserId != currentUserId))
-                throw new UnauthorizedAccessException(ErrorMessages.ModifyOwnItemsOnly);
+
 
             foreach (var item in items)
             {
+                _validationService.ValidateUserOwnsResource(item, currentUserId.Value, isAdmin);
+
                 item.Status = TodoStatus.Completed;
             }
 
@@ -308,22 +307,24 @@ namespace Services
 
             var currentUserId = _currentUserService.GetUserId();
 
-            if (currentUserId == null)
-                throw new UnauthorizedAccessException(ErrorMessages.UnauthorizedUser);
+            _validationService.EnsureUserIsAuthenticated(currentUserId);
 
-            bool isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
+
+            bool isAdmin = _currentUserService.IsAdmin();
 
 
             var items = await _repository.ListByIdsAsync(itemIds);
 
-            // Only allow updating items that belong to the current user
-            if (items.Any(t => t.UserId != currentUserId))
-                throw new UnauthorizedAccessException(ErrorMessages.ModifyOwnItemsOnly);
+
+
+
 
             foreach (var item in items)
             {
-                if (item.Status == TodoStatus.Completed)
-                    throw new InvalidOperationException(ErrorMessages.InvalidItemStatus);
+
+                _validationService.ValidateUserOwnsResource(item, currentUserId.Value);
+                _validationService.ValidateTodoItemStatusForUpdate(item.Status);
+
 
                 // Only update items that are currently InProgress
                 if (item.Status == TodoStatus.InProgress)
@@ -338,24 +339,19 @@ namespace Services
 
         public async Task ResetCompletedToInProgressAsync(List<Guid> itemIds)
         {
-            bool isAdmin = _currentUserService.IsInRole(UserRoles.Admin);
 
-            if (!isAdmin)
-                throw new UnauthorizedAccessException(ErrorMessages.AdminOnlyAction);
+            bool isAdmin = _currentUserService.IsAdmin();
+            _validationService.ValidateUserIsAdmin(isAdmin);
+
 
             var items = await _repository.ListByIdsAsync(itemIds);
 
+            _validationService.ValidateAllItemsAreCompleted(items);
+
             foreach (var item in items)
             {
-                // Only update items that are Completed
-                if (item.Status == TodoStatus.Completed)
-                {
-                    item.Status = TodoStatus.InProgress;
-                }
-                else
-                {
-                    throw new InvalidOperationException(ErrorMessages.CannotResetUnlessCompleted);
-                }
+
+                item.Status = TodoStatus.InProgress;
 
             }
 

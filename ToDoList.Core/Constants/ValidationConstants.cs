@@ -10,5 +10,8 @@ namespace ToDoList.Core.Constants
     {
         public const int MinPageNumber = 1;
         public const int MinPageSize = 1;
+        public const int MaxActiveItemsLimit = 10;
+        
+
     }
 }
