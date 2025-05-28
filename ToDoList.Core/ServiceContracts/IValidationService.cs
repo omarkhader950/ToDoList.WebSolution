@@ -24,8 +24,10 @@ namespace ToDoList.Core.ServiceContracts
 
 
 
-         void ValidateMaxActiveItemsLimit(int currentActiveCount);
+        void ValidateMaxActiveItemsLimit(int currentActiveCount);
         void ValidateAllItemsAreCompleted(IEnumerable<TodoItem> items);
+        void EnsureNotNull(object? obj, string parameterName);
+        
 
 
     }

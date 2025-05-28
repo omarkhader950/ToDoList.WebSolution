@@ -76,5 +76,12 @@ namespace ToDoList.Infrastructure.Services
                 throw new InvalidOperationException(ErrorMessages.CannotResetUnlessCompleted);
         }
 
+        public void EnsureNotNull(object? obj, string parameterName)
+        {
+            if (obj == null)
+                throw new ArgumentNullException(parameterName);
+        }
+
+
     }
 }

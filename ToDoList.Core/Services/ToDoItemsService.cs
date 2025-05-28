@@ -36,8 +36,8 @@ namespace Services
 
         public async Task<ToDoItemResponse?> GetTodoItemByIdAsync(Guid? todoItemId)
         {
-            if (todoItemId == null)
-                return null;
+            _validationService.EnsureNotNull(todoItemId, nameof(todoItemId));
+
 
             var userId = _currentUserService.GetUserId();
 
@@ -53,8 +53,8 @@ namespace Services
         public async Task<ToDoItemResponse> UpdateTodoItemAsync(ToDoItemUpdateRequest? request)
         {
 
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
+            _validationService.EnsureNotNull(request, nameof(request));
+
 
             var currentUserId = _currentUserService.GetUserId();
 
@@ -357,6 +357,8 @@ namespace Services
 
             await _repository.SaveChangesAsync();
         }
+
+     
 
 
 
