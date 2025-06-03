@@ -24,6 +24,7 @@ namespace Entities
 
         public bool IsCompleted { get; set; }
 
+        //
         public DateTime DueDate { get; set; }
 
    
@@ -38,14 +39,12 @@ namespace Entities
         //creation date 
         public DateTime CreationDate { get; set; }
 
-        //delete date 
         public DateTime? DeleteDate { get; set; }
 
-        //delete by
+       
         public Guid? DeleteBy {  get; set; }
 
 
-        // Status using the enum
         public TodoStatus Status { get; set; } = TodoStatus.New;
 
         [NotMapped]
