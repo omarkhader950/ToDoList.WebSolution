@@ -47,8 +47,8 @@ namespace WorkerService
                     _logger.LogError(ex, "Error occurred while checking for overdue TodoItems.");
                 }
 
-                // Wait 5 minutes before next check
-                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                // Wait 1 Seconds before next check
+                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
             }
         }
 
@@ -57,12 +57,19 @@ namespace WorkerService
             string source = "TodoMonitorWorker";
             string logName = "Application";
 
-            if (!EventLog.SourceExists(source))
+            try
             {
-                EventLog.CreateEventSource(source, logName);
-            }
+                if (!EventLog.SourceExists(source))
+                {
+                    EventLog.CreateEventSource(source, logName);
+                }
 
-            EventLog.WriteEntry(source, message, type);
+                EventLog.WriteEntry(source, message, type);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to write to Windows Event Viewer.");
+            }
         }
 
     }
