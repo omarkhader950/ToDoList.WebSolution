@@ -3,7 +3,6 @@ using System.Diagnostics;
 using ToDoList.Core.Enums;
 using ToDoList.Infrastructure.Data;
 
-
 namespace WorkerService
 {
     public class Worker : BackgroundService
@@ -19,6 +18,8 @@ namespace WorkerService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            const int batchSize = 2;
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -26,20 +27,31 @@ namespace WorkerService
                     using var scope = _serviceProvider.CreateScope();
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                    var overdueTodos = await dbContext.TodoItems
-                        .Where(t => (t.Status == TodoStatus.New || t.Status == TodoStatus.InProgress)
-                                && t.DueDate < DateTime.UtcNow)
-                        .ToListAsync(stoppingToken);
+                    int skip = 0;
 
-                    foreach (var todo in overdueTodos)
+                    while (!stoppingToken.IsCancellationRequested)
                     {
-                        string message = $"TodoItem overdue: '{todo.Title}' (Due: {todo.DueDate})";
+                        var batch = await dbContext.TodoItems
+                            .Where(t => t.DeleteBy == null && t.DeleteDate == null)
+                            .Where(t => (t.Status == TodoStatus.New || t.Status == TodoStatus.InProgress)
+                                        && t.DueDate < DateTime.UtcNow)
+                            .OrderBy(t => t.Id)
+                            .Skip(skip)
+                            .Take(batchSize)
+                            .AsNoTracking()
+                            .ToListAsync(stoppingToken);
 
-                        // Log to Windows Event Viewer
-                        LogToEventViewer(message, EventLogEntryType.Warning);
+                        if (batch.Count == 0)
+                            break;
 
-                        // Also log to console/log file
-                        _logger.LogWarning(message);
+                        foreach (var todo in batch)
+                        {
+                            string message = $" TodoItem overdue: '{todo.Title}' (Due: {todo.DueDate})";
+                            LogToEventViewer(message, EventLogEntryType.Warning);
+                            _logger.LogWarning(message);
+                        }
+
+                        skip += batchSize;
                     }
                 }
                 catch (Exception ex)
@@ -47,15 +59,14 @@ namespace WorkerService
                     _logger.LogError(ex, "Error occurred while checking for overdue TodoItems.");
                 }
 
-                // Wait 1 Seconds before next check
-                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
             }
         }
 
         private void LogToEventViewer(string message, EventLogEntryType type)
         {
-            string source = "TodoMonitorWorker";
-            string logName = "Application";
+            const string source = "TodoMonitorWorker";
+            const string logName = "Application";
 
             try
             {
@@ -71,6 +82,5 @@ namespace WorkerService
                 _logger.LogError(ex, "Failed to write to Windows Event Viewer.");
             }
         }
-
     }
 }
