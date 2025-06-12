@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using ToDoList.Core.Enums;
 using ToDoList.Infrastructure.Data;
@@ -18,7 +18,8 @@ namespace WorkerService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            const int batchSize = 2;
+             int batchSize = 1;
+           
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -32,12 +33,12 @@ namespace WorkerService
                     while (!stoppingToken.IsCancellationRequested)
                     {
                         var batch = await dbContext.TodoItems
-                            .Where(t => t.DeleteBy == null && t.DeleteDate == null)
-                            .Where(t => (t.Status == TodoStatus.New || t.Status == TodoStatus.InProgress)
-                                        && t.DueDate < DateTime.UtcNow)
+                            .Where(t =>
+                                (t.Status == TodoStatus.New || t.Status == TodoStatus.InProgress) &&
+                                t.DueDate < DateTime.UtcNow)
                             .OrderBy(t => t.Id)
                             .Skip(skip)
-                            .Take(batchSize)
+                            .Take(batchSize) 
                             .AsNoTracking()
                             .ToListAsync(stoppingToken);
 
@@ -50,6 +51,7 @@ namespace WorkerService
                             LogToEventViewer(message, EventLogEntryType.Warning);
                             _logger.LogWarning(message);
                         }
+                      
 
                         skip += batchSize;
                     }
@@ -79,7 +81,7 @@ namespace WorkerService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to write to Windows Event Viewer.");
+                _logger.LogError(ex, " Failed to write to Windows Event Viewer.");
             }
         }
     }
