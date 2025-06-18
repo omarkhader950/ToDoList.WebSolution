@@ -1,11 +1,18 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.WindowsServices; 
 using Microsoft.EntityFrameworkCore;
 using ToDoList.Infrastructure.Data;
 using WorkerService;
 
-var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<Worker>();
+Host.CreateDefaultBuilder(args)
+    .UseWindowsService() 
+    .ConfigureServices((context, services) =>
+    {
+        services.AddHostedService<Worker>(); 
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
-var host = builder.Build();
-host.Run();
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(context.Configuration.GetConnectionString("Default"))); 
+    })
+    .Build()
+    .Run();

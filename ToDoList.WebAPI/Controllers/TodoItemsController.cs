@@ -259,6 +259,49 @@ namespace ToDoList.WebAPI.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPost("{todoItemId}/attachments")]
+        public async Task<IActionResult> UploadAttachment(Guid todoItemId, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            try
+            {
+                // 1. Create the target folder inside wwwroot/Attachments
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Attachments");
+                Directory.CreateDirectory(uploadsFolder); // Will not overwrite if it already exists
+
+                // 2. Generate a unique filename to avoid collisions
+                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // 3. Save the file to the server
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // 4. Optionally save file metadata to the database (TODO)
+
+                // 5. Build the public URL for the uploaded file
+                var fileUrl = $"{Request.Scheme}://{Request.Host}/Attachments/{uniqueFileName}";
+
+                return Ok(new
+                {
+                    message = "File uploaded successfully",
+                    fileUrl,
+                    originalFileName = file.FileName
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
+        }
+
+
+
 
 
 

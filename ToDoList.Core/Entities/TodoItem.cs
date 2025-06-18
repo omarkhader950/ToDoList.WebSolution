@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ToDoList.Core.Entities;
+using ToDoList.Core.Entities.Entities;
 using ToDoList.Core.Enums;
 using ToDoList.Core.ServiceContracts;
 
@@ -50,6 +51,10 @@ namespace Entities
         [NotMapped]
         // Map UserId to OwnerId
         public Guid OwnerId => UserId;
+
+
+        public ICollection<TodoItemAttachment> Attachments { get; set; } = new List<TodoItemAttachment>();
+
 
     }
 }

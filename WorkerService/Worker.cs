@@ -18,8 +18,7 @@ namespace WorkerService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-             int batchSize = 1;
-           
+            const int batchSize = 1;
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -38,7 +37,7 @@ namespace WorkerService
                                 t.DueDate < DateTime.UtcNow)
                             .OrderBy(t => t.Id)
                             .Skip(skip)
-                            .Take(batchSize) 
+                            .Take(batchSize)
                             .AsNoTracking()
                             .ToListAsync(stoppingToken);
 
@@ -47,11 +46,10 @@ namespace WorkerService
 
                         foreach (var todo in batch)
                         {
-                            string message = $" TodoItem overdue: '{todo.Title}' (Due: {todo.DueDate})";
+                            string message = $"TodoItem overdue: '{todo.Title}' (Due: {todo.DueDate})";
                             LogToEventViewer(message, EventLogEntryType.Warning);
                             _logger.LogWarning(message);
                         }
-                      
 
                         skip += batchSize;
                     }
@@ -81,7 +79,7 @@ namespace WorkerService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, " Failed to write to Windows Event Viewer.");
+                _logger.LogError(ex, "Failed to write to Windows Event Viewer.");
             }
         }
     }

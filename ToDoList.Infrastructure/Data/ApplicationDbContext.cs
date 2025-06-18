@@ -4,6 +4,7 @@ using ToDoList.Infrastructure.Data;
 
 using System;
 using Entities;
+using ToDoList.Core.Entities.Entities;
 
 namespace ToDoList.Infrastructure.Data
 {
@@ -14,6 +15,8 @@ namespace ToDoList.Infrastructure.Data
         public virtual DbSet<TodoItem> TodoItems { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
+
+        public DbSet<TodoItemAttachment> TodoItemAttachments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -98,6 +101,13 @@ namespace ToDoList.Infrastructure.Data
                     UserId = user2Id
                 }
             );
+
+
+            modelBuilder.Entity<TodoItemAttachment>()
+    .HasOne(a => a.TodoItem)
+    .WithMany(t => t.Attachments)
+    .HasForeignKey(a => a.TodoItemId)
+    .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
