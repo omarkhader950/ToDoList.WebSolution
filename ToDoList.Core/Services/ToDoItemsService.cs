@@ -383,6 +383,8 @@ namespace Services
 
             var relativePath = $"/Attachments/{uniqueFileName}";
 
+          
+
             var attachment = new TodoItemAttachment
             {
                 TodoItemId = todoItemId,
@@ -392,18 +394,12 @@ namespace Services
                 UploadedBy = userId.ToString()
             };
 
-            await _repository.AddAttachmentAsync(attachment); // TODO ::You need to define this
+            await _repository.AddAttachmentAsync(attachment); 
             await _repository.SaveChangesAsync();
 
-            return new TodoItemAttachmentResponse
-            {
-                Id = attachment.Id,
-                TodoItemId = attachment.TodoItemId,
-                FileName = attachment.FileName,
-                FilePath = attachment.FilePath,
-                UploadedAt = attachment.UploadedAt,
-                UploadedBy = attachment.UploadedBy
-            };
+         return   _mapper.Map<TodoItemAttachment, TodoItemAttachmentResponse>(attachment);
+
+         
         }
     }
 }
