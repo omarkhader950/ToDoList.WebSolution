@@ -1,8 +1,10 @@
 ﻿using Entities;
+using Microsoft.AspNetCore.Http;
 using ServiceContracts.DTO;
 using System;
 using System.Collections.Generic;
 using ToDoList.Core.DTO;
+using ToDoList.Core.DTO.AttachmentDto;
 
 namespace ServiceContracts
 {
@@ -71,6 +73,11 @@ namespace ServiceContracts
         Task MarkAsNewAsync(List<Guid> itemIds);
 
         Task ResetCompletedToInProgressAsync(List<Guid> itemIds);
+
+        Task<TodoItemAttachmentResponse> UploadAttachmentAsync(Guid todoItemId, IFormFile file);
+
+
+
     }
 
 }

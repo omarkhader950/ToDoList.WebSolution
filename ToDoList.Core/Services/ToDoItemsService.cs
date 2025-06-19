@@ -9,6 +9,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using ToDoList.Core.ServiceContracts;
 using ToDoList.Core.Constants;
+using ToDoList.Core.DTO.AttachmentDto;
+using ToDoList.Core.Entities.Entities;
 
 
 
@@ -358,11 +360,50 @@ namespace Services
             await _repository.SaveChangesAsync();
         }
 
-     
+        public async Task<TodoItemAttachmentResponse> UploadAttachmentAsync(Guid todoItemId, IFormFile file)
+        {
+            _validationService.EnsureNotNull(file, nameof(file));
 
+            var userId = _currentUserService.GetUserId();
+            _validationService.EnsureUserIsAuthenticated(userId);
 
+            var todoItem = await _repository.GetByIdAsync(todoItemId, userId.Value);
+            _validationService.EnsureNotNull(todoItem, nameof(todoItem));
 
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Attachments");
+            Directory.CreateDirectory(uploadsFolder);
 
+            var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var relativePath = $"/Attachments/{uniqueFileName}";
+
+            var attachment = new TodoItemAttachment
+            {
+                TodoItemId = todoItemId,
+                FileName = file.FileName,
+                FilePath = relativePath,
+                UploadedAt = DateTime.UtcNow,
+                UploadedBy = userId.ToString()
+            };
+
+            await _repository.AddAttachmentAsync(attachment); // TODO ::You need to define this
+            await _repository.SaveChangesAsync();
+
+            return new TodoItemAttachmentResponse
+            {
+                Id = attachment.Id,
+                TodoItemId = attachment.TodoItemId,
+                FileName = attachment.FileName,
+                FilePath = attachment.FilePath,
+                UploadedAt = attachment.UploadedAt,
+                UploadedBy = attachment.UploadedBy
+            };
+        }
     }
 }

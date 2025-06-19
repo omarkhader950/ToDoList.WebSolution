@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ToDoList.Core.DTO;
+using ToDoList.Core.Entities.Entities;
 
 namespace ToDoList.Core.Repositories
 {
@@ -27,7 +28,10 @@ namespace ToDoList.Core.Repositories
 
 
         Task<int> CountActiveAsync(Guid userId);
-        
+
+        Task AddAttachmentAsync(TodoItemAttachment attachment);
+
+
 
 
     }

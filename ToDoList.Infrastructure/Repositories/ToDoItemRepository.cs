@@ -9,6 +9,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using ToDoList.Core.DTO;
+using ToDoList.Core.Entities.Entities;
 using ToDoList.Core.Enums;
 using ToDoList.Core.Repositories;
 using ToDoList.Infrastructure.Data;
@@ -215,6 +216,10 @@ namespace ToDoList.Infrastructure.Repositories
                              (t.Status == TodoStatus.New || t.Status == TodoStatus.InProgress));
         }
 
-      
+        public Task AddAttachmentAsync(TodoItemAttachment attachment)
+        {
+            _db.TodoItemAttachments.Add(attachment);
+            return Task.CompletedTask;
+        }
     }
 }
