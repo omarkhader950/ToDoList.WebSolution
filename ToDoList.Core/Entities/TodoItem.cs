@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ToDoList.Core.Entities;
-using ToDoList.Core.Entities.Entities;
 using ToDoList.Core.Enums;
 using ToDoList.Core.ServiceContracts;
 

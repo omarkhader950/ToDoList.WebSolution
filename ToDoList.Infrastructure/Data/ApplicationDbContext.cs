@@ -4,7 +4,6 @@ using ToDoList.Infrastructure.Data;
 
 using System;
 using Entities;
-using ToDoList.Core.Entities.Entities;
 
 namespace ToDoList.Infrastructure.Data
 {
@@ -108,6 +107,10 @@ namespace ToDoList.Infrastructure.Data
     .WithMany(t => t.Attachments)
     .HasForeignKey(a => a.TodoItemId)
     .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TodoItemAttachment>()
+    .HasQueryFilter(a => a.TodoItem.DeleteBy == null && a.TodoItem.DeleteDate == null);
+
         }
     }
 }

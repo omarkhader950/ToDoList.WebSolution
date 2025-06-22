@@ -20,4 +20,8 @@
 		<ProjectReference Include="..\ToDoList.Infrastructure\ToDoList.Infrastructure.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="wwwroot\Attachments\" />
+	</ItemGroup>
+
 </Project>

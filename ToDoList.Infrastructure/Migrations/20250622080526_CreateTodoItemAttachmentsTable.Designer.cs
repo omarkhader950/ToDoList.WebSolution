@@ -12,8 +12,8 @@ using ToDoList.Infrastructure.Data;
 namespace ToDoList.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250618093755_AddTodoItemAttachments")]
-    partial class AddTodoItemAttachments
+    [Migration("20250622080526_CreateTodoItemAttachmentsTable")]
+    partial class CreateTodoItemAttachmentsTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -108,9 +108,9 @@ namespace ToDoList.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("db2f25b9-2149-4f75-aca0-f5baab2df9f4"),
-                            CreationDate = new DateTime(2025, 6, 18, 12, 37, 55, 87, DateTimeKind.Local).AddTicks(6273),
+                            CreationDate = new DateTime(2025, 6, 22, 11, 5, 26, 77, DateTimeKind.Local).AddTicks(1053),
                             Description = "This is the first task.",
-                            DueDate = new DateTime(2025, 6, 19, 12, 37, 55, 87, DateTimeKind.Local).AddTicks(6253),
+                            DueDate = new DateTime(2025, 6, 23, 11, 5, 26, 77, DateTimeKind.Local).AddTicks(1024),
                             IsCompleted = false,
                             Status = 0,
                             Title = "First Task",
@@ -119,9 +119,9 @@ namespace ToDoList.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("4f1790de-f460-409d-8c27-67089bcbed2d"),
-                            CreationDate = new DateTime(2025, 6, 18, 12, 37, 55, 87, DateTimeKind.Local).AddTicks(6276),
+                            CreationDate = new DateTime(2025, 6, 22, 11, 5, 26, 77, DateTimeKind.Local).AddTicks(1056),
                             Description = "This is the second task.",
-                            DueDate = new DateTime(2025, 6, 20, 12, 37, 55, 87, DateTimeKind.Local).AddTicks(6275),
+                            DueDate = new DateTime(2025, 6, 24, 11, 5, 26, 77, DateTimeKind.Local).AddTicks(1056),
                             IsCompleted = false,
                             Status = 0,
                             Title = "Second Task",
@@ -129,62 +129,7 @@ namespace ToDoList.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Entities.User", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("fac962ac-e397-47e2-996f-cc8e728a7f8f"),
-                            PasswordHash = "$2a$11$virg5SgyAxzq3xUl7qH53Oxcod0QqeWrnDtH.D5E1KIwjC.s12kgO",
-                            RoleId = new Guid("8dfc85ca-f780-43b1-b908-97ee9c90ef42"),
-                            Username = "admin"
-                        },
-                        new
-                        {
-                            Id = new Guid("44c091c5-be82-4b3f-a9e0-eb195d2e62af"),
-                            PasswordHash = "$2a$11$tVXfFCgUj610QSCzgPQpPuYXttwhjb2Zl1CCDZQtffX3Oa/1zL6mC",
-                            RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
-                            Username = "user1"
-                        },
-                        new
-                        {
-                            Id = new Guid("3625e573-9f81-46a1-80f9-1100306169f5"),
-                            PasswordHash = "$2a$11$mG1rLswIIlRWjbFyGz1zGuj/hDT5nxD0MsQhjYdwlUsDmgApyrDca",
-                            RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
-                            Username = "user2"
-                        },
-                        new
-                        {
-                            Id = new Guid("59dfec42-4c48-407f-b9de-1ab16a845624"),
-                            PasswordHash = "$2a$11$r2SBVFohGhkVo0tZH8KHo.VTEyAY7Ffyh.Unf5RnpgSfwp3JD72JS",
-                            RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
-                            Username = "user3"
-                        });
-                });
-
-            modelBuilder.Entity("ToDoList.Core.Entities.Entities.TodoItemAttachment", b =>
+            modelBuilder.Entity("Entities.TodoItemAttachment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -217,6 +162,61 @@ namespace ToDoList.Infrastructure.Migrations
                     b.ToTable("TodoItemAttachments");
                 });
 
+            modelBuilder.Entity("Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("fac962ac-e397-47e2-996f-cc8e728a7f8f"),
+                            PasswordHash = "$2a$11$W1aw9rPyihMf6abxNQaS5./hDRTqf359qg.F3EcJmkXXbBMHBJOWu",
+                            RoleId = new Guid("8dfc85ca-f780-43b1-b908-97ee9c90ef42"),
+                            Username = "admin"
+                        },
+                        new
+                        {
+                            Id = new Guid("44c091c5-be82-4b3f-a9e0-eb195d2e62af"),
+                            PasswordHash = "$2a$11$/rvYqZleFCAEp2pS8IZeTOZYMZRbXGxubQhICO4ZirC/nobK1eZqq",
+                            RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
+                            Username = "user1"
+                        },
+                        new
+                        {
+                            Id = new Guid("3625e573-9f81-46a1-80f9-1100306169f5"),
+                            PasswordHash = "$2a$11$nFjMNdH.l5uxnyieviI5J.RALzFAveeOF3lmWJdX.d2U5EvrG2Wju",
+                            RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
+                            Username = "user2"
+                        },
+                        new
+                        {
+                            Id = new Guid("59dfec42-4c48-407f-b9de-1ab16a845624"),
+                            PasswordHash = "$2a$11$yeDci3Oe0WMaEBhdQo5U6uMipi7pxaSgiN6KeoGSiOJMP5UA5IP8e",
+                            RoleId = new Guid("7b858e14-d92d-43e0-afe9-261365d067ad"),
+                            Username = "user3"
+                        });
+                });
+
             modelBuilder.Entity("Entities.Role", b =>
                 {
                     b.HasOne("Entities.User", null)
@@ -235,6 +235,17 @@ namespace ToDoList.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Entities.TodoItemAttachment", b =>
+                {
+                    b.HasOne("Entities.TodoItem", "TodoItem")
+                        .WithMany("Attachments")
+                        .HasForeignKey("TodoItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TodoItem");
+                });
+
             modelBuilder.Entity("Entities.User", b =>
                 {
                     b.HasOne("Entities.Role", "Role")
@@ -244,17 +255,6 @@ namespace ToDoList.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("ToDoList.Core.Entities.Entities.TodoItemAttachment", b =>
-                {
-                    b.HasOne("Entities.TodoItem", "TodoItem")
-                        .WithMany("Attachments")
-                        .HasForeignKey("TodoItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TodoItem");
                 });
 
             modelBuilder.Entity("Entities.Role", b =>

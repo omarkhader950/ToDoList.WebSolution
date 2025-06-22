@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 using ToDoList.Core.ServiceContracts;
 using ToDoList.Core.Constants;
 using ToDoList.Core.DTO.AttachmentDto;
-using ToDoList.Core.Entities.Entities;
+using ToDoList.Core.Entities;
 
 
 

@@ -9,7 +9,6 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using ToDoList.Core.DTO;
-using ToDoList.Core.Entities.Entities;
 using ToDoList.Core.Enums;
 using ToDoList.Core.Repositories;
 using ToDoList.Infrastructure.Data;

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ToDoList.Core.DTO;
-using ToDoList.Core.Entities.Entities;
 
 namespace ToDoList.Core.Repositories
 {
